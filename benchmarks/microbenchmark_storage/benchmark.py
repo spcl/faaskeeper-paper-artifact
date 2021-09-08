@@ -18,6 +18,7 @@ max_size = int(sys.argv[6]) if len(sys.argv) == 7 else -1
 # base64 encoded string begins at 4 bytes anyway
 BENCHMARK_SIZES = [2 ** i for i in range(2, 20)]
 DYNAMODB_TABLE_NAME = "faaskeeper_microbenchmark_storage"
+S3_BUCKET_NAME = "faaskeeper-microbenchmark-storage"
 
 
 def generate_binary_data(size):
@@ -28,12 +29,28 @@ def generate_binary_data(size):
     return base64.b64encode(bytearray([1] * original_size))
 
 
-def test_s3_read():
-    pass
+def test_s3_read(client, name, size, repetitions):
+    results = []
+    for i in range(repetitions):
+        begin = datetime.now()
+        ret = client.get_object(Bucket=S3_BUCKET_NAME, Key=name)
+        end = datetime.now()
+        results.append(int((end - begin) / timedelta(microseconds=1)))
+    data = ret["Body"].read()
+    print(f"Expected read size {size}, output data size: {len(data)}")
+    return results, repetitions
 
 
-def test_s3_write():
-    pass
+def test_s3_write(client, name, size, repetitions):
+    results = []
+    data = generate_binary_data(size)
+    print(f"Expected write size {size}, input data size: {len(data)}")
+    for i in range(repetitions):
+        begin = datetime.now()
+        client.put_object(Bucket=S3_BUCKET_NAME, Key=name, Body=data)
+        end = datetime.now()
+        results.append(int((end - begin) / timedelta(microseconds=1)))
+    return results, repetitions
 
 
 def test_dynamodb_read(client, name, size, repetitions):
@@ -74,16 +91,27 @@ def test_dynamodb_write(client, name, size, repetitions):
     return results, write_capacity
 
 
-def init_s3():
-    pass
+def init_s3(region):
+    client = boto3.client("s3", region_name=region)
+    try:
+        # weird AWS API inconsistency
+        if region != "us-east-1":
+            client.create_bucket(
+                Bucket=S3_BUCKET_NAME, CreateBucketConfiguration={"LocationConstraint": region},
+            )
+        else:
+            client.create_bucket(Bucket=S3_BUCKET_NAME)
+    except client.exceptions.BucketAlreadyExists:
+        print("Bucket already exists")
+    return client
 
 
 def delete_s3(client):
-    pass
+    raise NotImplementedError()
 
 
 def init_dynamodb(region):
-    client = boto3.client("dynamodb")
+    client = boto3.client("dynamodb", region_name=region)
 
     # Testing table: string key, binary data
     try:
@@ -106,7 +134,7 @@ def delete_dynamodb(client):
 
 print(f"Initialize {storage_type}")
 if storage_type == "s3":
-    client = init_s3()
+    client = init_s3(region)
 elif storage_type == "dynamodb":
     client = init_dynamodb(region)
 else:
@@ -119,7 +147,12 @@ for size in BENCHMARK_SIZES:
     if max_size != -1 and size > max_size:
         size = max_size
     print(f"Testing write data of size {size}")
-    results, write_capacity = test_dynamodb_write(client, f"size_{size}", size, repetitions)
+    if storage_type == "s3":
+        results, write_capacity = test_s3_write(client, f"size_{size}", size, repetitions)
+    elif storage_type == "dynamodb":
+        results, write_capacity = test_dynamodb_write(client, f"size_{size}", size, repetitions)
+    else:
+        raise NotImplementedError()
     df_write = pd.DataFrame(data=results, columns=["data"])
     df_write["op"] = "write"
     df_write = df_write.append({"data": write_capacity, "op": "write_capacity"}, ignore_index=True)
@@ -128,7 +161,12 @@ for size in BENCHMARK_SIZES:
     dfs.append(df_write)
 
     print(f"Testing read data of size {size}")
-    results, read_capacity = test_dynamodb_read(client, f"size_{size}", size, repetitions)
+    if storage_type == "s3":
+        results, read_capacity = test_s3_read(client, f"size_{size}", size, repetitions)
+    elif storage_type == "dynamodb":
+        results, read_capacity = test_dynamodb_read(client, f"size_{size}", size, repetitions)
+    else:
+        raise NotImplementedError()
     df_read = pd.DataFrame(data=results, columns=["data"])
     df_read["op"] = "read"
     df_read["storage"] = "dynamodb"
