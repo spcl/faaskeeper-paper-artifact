@@ -1,0 +1,6 @@
+Initialize dynamodb
+Table already exists
+Testing write data of size 4
+Expected write size 4, input data size: 4
+Testing read data of size 4
+Expected read size 4, output data size: 4
