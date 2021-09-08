@@ -1,5 +1,76 @@
+Script started on 2021-09-08 22:44:11+00:00 [TERM="xterm-256color" TTY="/dev/pts/4" COLUMNS="318" LINES="80"]
 Initialize s3
 Testing write data of size 4
 Expected write size 4, input data size: 4
 Testing read data of size 4
 Expected read size 4, output data size: 4
+Testing write data of size 8
+Expected write size 8, input data size: 8
+Testing read data of size 8
+Expected read size 8, output data size: 8
+Testing write data of size 16
+Expected write size 16, input data size: 16
+Testing read data of size 16
+Expected read size 16, output data size: 16
+Testing write data of size 32
+Expected write size 32, input data size: 32
+Testing read data of size 32
+Expected read size 32, output data size: 32
+Testing write data of size 64
+Expected write size 64, input data size: 64
+Testing read data of size 64
+Expected read size 64, output data size: 64
+Testing write data of size 128
+Expected write size 128, input data size: 128
+Testing read data of size 128
+Expected read size 128, output data size: 128
+Testing write data of size 256
+Expected write size 256, input data size: 256
+Testing read data of size 256
+Expected read size 256, output data size: 256
+Testing write data of size 512
+Expected write size 512, input data size: 512
+Testing read data of size 512
+Expected read size 512, output data size: 512
+Testing write data of size 1024
+Expected write size 1024, input data size: 1024
+Testing read data of size 1024
+Expected read size 1024, output data size: 1024
+Testing write data of size 2048
+Expected write size 2048, input data size: 2048
+Testing read data of size 2048
+Expected read size 2048, output data size: 2048
+Testing write data of size 4096
+Expected write size 4096, input data size: 4096
+Testing read data of size 4096
+Expected read size 4096, output data size: 4096
+Testing write data of size 8192
+Expected write size 8192, input data size: 8192
+Testing read data of size 8192
+Expected read size 8192, output data size: 8192
+Testing write data of size 16384
+Expected write size 16384, input data size: 16384
+Testing read data of size 16384
+Expected read size 16384, output data size: 16384
+Testing write data of size 32768
+Expected write size 32768, input data size: 32768
+Testing read data of size 32768
+Expected read size 32768, output data size: 32768
+Testing write data of size 65536
+Expected write size 65536, input data size: 65536
+Testing read data of size 65536
+Expected read size 65536, output data size: 65536
+Testing write data of size 131072
+Expected write size 131072, input data size: 131072
+Testing read data of size 131072
+Expected read size 131072, output data size: 131072
+Testing write data of size 262144
+Expected write size 262144, input data size: 262144
+Testing read data of size 262144
+Expected read size 262144, output data size: 262144
+Testing write data of size 524288
+Expected write size 524288, input data size: 524288
+Testing read data of size 524288
+Expected read size 524288, output data size: 524288
+
+Script done on 2021-09-08 23:04:58+00:00 [COMMAND_EXIT_CODE="0"]
