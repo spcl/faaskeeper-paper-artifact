@@ -18,7 +18,7 @@ max_size = int(sys.argv[6]) if len(sys.argv) == 7 else -1
 # base64 encoded string begins at 4 bytes anyway
 BENCHMARK_SIZES = [2 ** i for i in range(2, 20)]
 DYNAMODB_TABLE_NAME = "faaskeeper_microbenchmark_storage"
-S3_BUCKET_NAME = "faaskeeper-microbenchmark-storage"
+S3_BUCKET_NAME = "faaskeeper-microbenchmark-storage-inter"
 
 
 def generate_binary_data(size):
@@ -31,9 +31,11 @@ def generate_binary_data(size):
 
 def test_s3_read(client, name, size, repetitions):
     results = []
-    for i in range(repetitions):
+    for i in range(repetitions+1):
         begin = datetime.now()
         ret = client.get_object(Bucket=S3_BUCKET_NAME, Key=name)
+        if i == 0:
+            continue
         end = datetime.now()
         results.append(int((end - begin) / timedelta(microseconds=1)))
     data = ret["Body"].read()
@@ -45,9 +47,11 @@ def test_s3_write(client, name, size, repetitions):
     results = []
     data = generate_binary_data(size)
     print(f"Expected write size {size}, input data size: {len(data)}")
-    for i in range(repetitions):
+    for i in range(repetitions+1):
         begin = datetime.now()
         client.put_object(Bucket=S3_BUCKET_NAME, Key=name, Body=data)
+        if i == 0:
+            continue
         end = datetime.now()
         results.append(int((end - begin) / timedelta(microseconds=1)))
     return results, repetitions
@@ -57,7 +61,7 @@ def test_dynamodb_read(client, name, size, repetitions):
 
     results = []
     read_capacity = 0.0
-    for i in range(repetitions):
+    for i in range(repetitions+1):
         begin = datetime.now()
         ret = client.get_item(
             TableName=DYNAMODB_TABLE_NAME,
@@ -65,6 +69,8 @@ def test_dynamodb_read(client, name, size, repetitions):
             ReturnConsumedCapacity="TOTAL",
             ConsistentRead=True,
         )
+        if i == 0:
+            continue
         read_capacity += ret["ConsumedCapacity"]["CapacityUnits"]
         end = datetime.now()
         results.append(int((end - begin) / timedelta(microseconds=1)))
@@ -78,13 +84,15 @@ def test_dynamodb_write(client, name, size, repetitions):
     data = generate_binary_data(size)
     print(f"Expected write size {size}, input data size: {len(data)}")
     write_capacity = 0.0
-    for i in range(repetitions):
+    for i in range(repetitions + 1):
         begin = datetime.now()
         ret = client.put_item(
             TableName=DYNAMODB_TABLE_NAME,
             Item={"key": {"S": name}, "data": {"B": data}},
             ReturnConsumedCapacity="TOTAL",
         )
+        if i == 0:
+            continue
         write_capacity += ret["ConsumedCapacity"]["CapacityUnits"]
         end = datetime.now()
         results.append(int((end - begin) / timedelta(microseconds=1)))
@@ -122,7 +130,7 @@ def init_dynamodb(region):
             BillingMode="PAY_PER_REQUEST",
         )
         print("Sleep to make sure the table is up and running")
-        time.sleep(5)
+        time.sleep(10)
     except client.exceptions.ResourceInUseException:
         print("Table already exists")
     return client
