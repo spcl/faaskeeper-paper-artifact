@@ -1,4 +1,4 @@
-Script started on 2021-09-08 22:20:03+00:00 [TERM="xterm-256color" TTY="/dev/pts/4" COLUMNS="318" LINES="80"]
+Script started on 2021-09-08 23:18:13+00:00 [TERM="screen" TTY="/dev/pts/0" COLUMNS="318" LINES="79"]
 Initialize dynamodb
 Table already exists
 Testing write data of size 4
@@ -8,70 +8,41 @@ Expected read size 4, output data size: 4
 Testing write data of size 8
 Expected write size 8, input data size: 8
 Testing read data of size 8
-Expected read size 8, output data size: 8
-Testing write data of size 16
-Expected write size 16, input data size: 16
-Testing read data of size 16
-Expected read size 16, output data size: 16
-Testing write data of size 32
-Expected write size 32, input data size: 32
-Testing read data of size 32
-Expected read size 32, output data size: 32
-Testing write data of size 64
-Expected write size 64, input data size: 64
-Testing read data of size 64
-Expected read size 64, output data size: 64
-Testing write data of size 128
-Expected write size 128, input data size: 128
-Testing read data of size 128
-Expected read size 128, output data size: 128
-Testing write data of size 256
-Expected write size 256, input data size: 256
-Testing read data of size 256
-Expected read size 256, output data size: 256
-Testing write data of size 512
-Expected write size 512, input data size: 512
-Testing read data of size 512
-Expected read size 512, output data size: 512
-Testing write data of size 1024
-Expected write size 1024, input data size: 1024
-Testing read data of size 1024
-Expected read size 1024, output data size: 1024
-Testing write data of size 2048
-Expected write size 2048, input data size: 2048
-Testing read data of size 2048
-Expected read size 2048, output data size: 2048
-Testing write data of size 4096
-Expected write size 4096, input data size: 4096
-Testing read data of size 4096
-Expected read size 4096, output data size: 4096
-Testing write data of size 8192
-Expected write size 8192, input data size: 8192
-Testing read data of size 8192
-Expected read size 8192, output data size: 8192
-Testing write data of size 16384
-Expected write size 16384, input data size: 16384
-Testing read data of size 16384
-Expected read size 16384, output data size: 16384
-Testing write data of size 32768
-Expected write size 32768, input data size: 32768
-Testing read data of size 32768
-Expected read size 32768, output data size: 32768
-Testing write data of size 65536
-Expected write size 65536, input data size: 65536
-Testing read data of size 65536
-Expected read size 65536, output data size: 65536
-Testing write data of size 131072
-Expected write size 131072, input data size: 131072
-Testing read data of size 131072
-Expected read size 131072, output data size: 131072
-Testing write data of size 262144
-Expected write size 262144, input data size: 262144
-Testing read data of size 262144
-Expected read size 262144, output data size: 262144
-Testing write data of size 409550
-Expected write size 409550, input data size: 409552
-Testing read data of size 409550
-Expected read size 409550, output data size: 409552
+^CTraceback (most recent call last):
+  File "benchmark.py", line 181, in <module>
+    results, read_capacity = test_dynamodb_read(client, f"size_{size}", size, args.repetitions)
+  File "benchmark.py", line 72, in test_dynamodb_read
+    ret = client.get_item(
+  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/botocore/client.py", line 276, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/botocore/client.py", line 572, in _make_api_call
+    http, parsed_response = self._make_request(
+  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/botocore/client.py", line 592, in _make_request
+    return self._endpoint.make_request(operation_model, request_dict)
+  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/botocore/endpoint.py", line 102, in make_request
+    return self._send_request(request_dict, operation_model)
+  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/botocore/endpoint.py", line 132, in _send_request
+    request = self.create_request(request_dict, operation_model)
+  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/botocore/endpoint.py", line 115, in create_request
+    self._event_emitter.emit(event_name, request=request,
+  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/botocore/hooks.py", line 356, in emit
+    return self._emitter.emit(aliased_event_name, **kwargs)
+  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/botocore/hooks.py", line 228, in emit
+    return self._emit(event_name, kwargs)
+  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/botocore/hooks.py", line 211, in _emit
+    response = handler(**kwargs)
+  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/botocore/signers.py", line 90, in handler
+    return self.sign(operation_name, request)
+  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/botocore/signers.py", line 160, in sign
+    auth.add_auth(request)
+  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/botocore/auth.py", line 363, in add_auth
+    canonical_request = self.canonical_request(request)
+  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/botocore/auth.py", line 310, in canonical_request
+    body_checksum = self.payload(request)
+  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/botocore/auth.py", line 271, in payload
+    request_body = request.body
+  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/botocore/awsrequest.py", line 466, in body
+    @property
+KeyboardInterrupt
 
-Script done on 2021-09-08 22:38:18+00:00 [COMMAND_EXIT_CODE="0"]
+Script done on 2021-09-08 23:18:29+00:00 [COMMAND_EXIT_CODE="130"]
