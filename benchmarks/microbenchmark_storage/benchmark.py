@@ -115,7 +115,7 @@ def init_s3(region):
             )
         else:
             client.create_bucket(Bucket=S3_BUCKET_NAME)
-    except client.exceptions.BucketAlreadyExists:
+    except (client.exceptions.BucketAlreadyExists, client.exceptions.BucketAlreadyOwnedByYou):
         print("Bucket already exists")
     return client
 
