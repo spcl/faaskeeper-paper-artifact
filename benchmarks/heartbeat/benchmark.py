@@ -27,7 +27,7 @@ requests = set()
 
 clients = args.clients
 
-fname = "faaskeeper-dev-heartbeat"
+fname = "faaskeeper-test-heartbeat-heartbeat"
 dfs = []
 for memory in MEMORY_SIZES:
 
@@ -45,7 +45,7 @@ for memory in MEMORY_SIZES:
     results.append(["START_TIME", (start - timedelta(seconds=30)).timestamp()])
     for i in range(args.repetitions + 10):
 
-        invoc = lambda_client.invoke(FunctionName="faaskeeper-dev-heartbeat")
+        invoc = lambda_client.invoke(FunctionName=fname)
         res = json.loads(invoc["Payload"].read().decode())
         clients = res["active_clients"]
         if clients != args.clients:
