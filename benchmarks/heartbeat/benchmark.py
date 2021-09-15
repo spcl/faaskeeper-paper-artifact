@@ -15,11 +15,10 @@ args = parser.parse_args()
 # in bytes
 # base64 encoded string begins at 4 bytes anyway
 
-MEMORY_SIZES = [128, 256]
+MEMORY_SIZES = [128, 256, 512, 1024, 1536, 2048]
 
 print(f"Initialize")
-lambda_client = boto3.client("lambda")
-logs_client = boto3.client("logs")
+lambda_client = boto3.client("lambda", region_name='us-east-1')
 
 dfs = []
 costs = []

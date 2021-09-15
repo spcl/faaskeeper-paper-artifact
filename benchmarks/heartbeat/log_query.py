@@ -12,7 +12,7 @@ parser.add_argument("--output", type=str)
 args = parser.parse_args()
 
 data = pd.read_csv(args.input, index_col=[0])
-logs_client = boto3.client("logs")
+logs_client = boto3.client("logs", region_name='us-east-1')
 
 MEMORY_SIZES = [128, 256]
 dfs = []
@@ -33,7 +33,7 @@ for memory in MEMORY_SIZES:
     #end_timestamp -= 2*60*60
     # now query logs
     query = "fields @timestamp, @message | filter @message like /REPORT/"
-    log_group = "/aws/lambda/faaskeeper-dev-heartbeat"
+    log_group = "/aws/lambda/faaskeeper-test-heartbeat-heartbeat"
     #print(int(start_timestamp))
     #print(int(end_timestamp)+1)
     start_query_response = logs_client.start_query(
@@ -41,6 +41,7 @@ for memory in MEMORY_SIZES:
         startTime=int(start_timestamp)-60,
         endTime=int(end_timestamp)+1+60,
         queryString=query,
+        limit=10000
     )
     query_id = start_query_response["queryId"]
     response = None
@@ -62,7 +63,8 @@ for memory in MEMORY_SIZES:
                     split = line.split(":")
                     res.append(split[1].split()[0])
                 if res[0] not in requests:
-                    print(f"Skip incorrect request {res[0]}")
+                    #print(f"Skip incorrect request {res[0]}")
+                    pass
                 elif len(res) > 5:
                     print(f"Cold invocation! {r['value']}")
                 else:
