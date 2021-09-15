@@ -14,7 +14,7 @@ args = parser.parse_args()
 data = pd.read_csv(args.input, index_col=[0])
 logs_client = boto3.client("logs", region_name='us-east-1')
 
-MEMORY_SIZES = [128, 256]
+MEMORY_SIZES = [128, 256, 512, 1024, 1536, 2048]
 dfs = []
 for memory in MEMORY_SIZES:
 
