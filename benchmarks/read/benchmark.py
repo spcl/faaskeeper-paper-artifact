@@ -26,7 +26,8 @@ def generate_binary_data(size):
     # then it's padded to 4 bytes
     # so the reverse is: n * 3/4 - we always select multiples of fours
     original_size = int(size * 3 / 4)
-    return base64.b64encode(bytearray([1] * original_size))
+    #return base64.b64encode(bytearray([1] * original_size))
+    return bytes(bytearray([1]*original_size))
 
 
 cfg = Config.deserialize(json.load(open(args.config)))
@@ -35,11 +36,15 @@ try:
     client = FaaSKeeperClient(cfg, args.port, False)
     client.start()
     print(f"Connected {client.session_id}")
-    # wait for kill
 
     dfs = []
     for size in BENCHMARK_SIZES:
 
+        # evaluate at the maximum
+        if args.max_size != -1 and size > args.max_size:
+            size = args.max_size
+
+        print(f"Execute size {size}")
         data = generate_binary_data(size)
         try:
             client.delete(f"/size_{size}")
@@ -67,10 +72,6 @@ try:
         )
         df_write["size"] = size
         dfs.append(df_write)
-
-        # evaluate at the maximum
-        if args.max_size != -1 and size > args.max_size:
-            size = args.max_size
 
         if args.max_size != -1 and size > args.max_size:
             break
