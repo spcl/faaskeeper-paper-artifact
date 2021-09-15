@@ -65,7 +65,8 @@ try:
             raise RuntimeError()
 
         df_write = pd.DataFrame(data=results, columns=["data"])
-        df_write["op"] = "write"
+        df_write['native_data'] = StorageStatistics.instance().read_times
+        df_write["op"] = "read"
         df_write = df_write.append(
             {"data": StorageStatistics.instance().read_units, "op": "read_capacity"},
             ignore_index=True,
