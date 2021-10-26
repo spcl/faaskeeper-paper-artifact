@@ -1,2 +1,3 @@
 boto3==1.11.6
 pandas
+nodeenv
