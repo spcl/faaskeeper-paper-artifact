@@ -1,0 +1,63 @@
+service: faaskeeper-microbenchmark-queue
+
+provider:
+  name: aws
+  runtime: python3.8
+  stage: dev
+  region: us-east-1
+  environment:
+    DYNAMODB_TABLE: BENCHMARK_QUEUE
+
+functions:
+  benchmarker:
+    handler: function/benchmark.benchmarker
+    reservedConcurrency: 1
+    timeout: 30
+    events:
+      - stream:
+          type: dynamodb
+          batchSize: 1
+          startingPosition: LATEST
+          maximumRetryAttempts: 3
+          arn:
+            Fn::GetAtt:
+              - dynamoQueue
+              - StreamArn
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - sqsQueue
+              - Arn
+      - http:
+          path: watch
+          method: POST
+
+resources:
+  Resources:
+    dynamoQueue:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: key
+            AttributeType: S
+          - AttributeName: timestamp
+            AttributeType: S
+        KeySchema:
+          - AttributeName: key
+            KeyType: HASH
+          - AttributeName: timestamp
+            KeyType: RANGE
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
+    sqsQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: BENCHMARK_SQS_QUEUE.fifo
+        FifoQueue: True
+        DelaySeconds: 0
+
+plugins:
+  - serverless-iam-roles-per-function
+
