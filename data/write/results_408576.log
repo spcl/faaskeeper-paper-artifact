@@ -1,0 +1,104 @@
+Script started on 2021-09-15 16:40:19+00:00 [TERM="xterm-256color" TTY="/dev/pts/1" COLUMNS="238" LINES="60"]
+Update config to 128
+Connected 76748374
+Execute size 408576
+Done
+Begin
+Execute memory 128
+Repetition 0
+Repetition 10
+Repetition 20
+Repetition 30
+Repetition 40
+Repetition 50
+Repetition 60
+Repetition 70
+Repetition 80
+Repetition 90
+Repetition 100
+Repetition 110
+Repetition 120
+Repetition 130
+Update config to 256
+Connected 2d6ba5f4
+Execute size 408576
+Done
+Begin
+Execute memory 256
+Repetition 0
+Repetition 10
+Repetition 20
+Repetition 30
+Repetition 40
+Repetition 50
+Repetition 60
+Repetition 70
+Repetition 80
+Repetition 90
+Repetition 100
+Repetition 110
+Repetition 120
+Repetition 130
+Update config to 512
+Connected 6cbeadbe
+Execute size 408576
+Done
+Begin
+Execute memory 512
+Repetition 0
+Repetition 10
+Repetition 20
+Repetition 30
+Repetition 40
+Repetition 50
+Repetition 60
+Repetition 70
+Repetition 80
+Repetition 90
+Repetition 100
+Repetition 110
+Repetition 120
+Repetition 130
+Update config to 1024
+Connected d0bd631e
+Execute size 408576
+Done
+Begin
+Execute memory 1024
+Repetition 0
+Repetition 10
+Repetition 20
+Repetition 30
+Repetition 40
+Repetition 50
+Repetition 60
+Repetition 70
+Repetition 80
+Repetition 90
+Repetition 100
+Repetition 110
+Repetition 120
+Repetition 130
+Update config to 2048
+Connected 9fbb3e01
+Execute size 408576
+Done
+Begin
+Execute memory 2048
+Repetition 0
+Repetition 10
+Repetition 20
+Repetition 30
+Repetition 40
+Repetition 50
+Repetition 60
+Repetition 70
+Repetition 80
+Repetition 90
+Repetition 100
+Repetition 110
+Repetition 120
+Repetition 130
+Finished!
+
+Script done on 2021-09-15 16:55:47+00:00 [COMMAND_EXIT_CODE="0"]

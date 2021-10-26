@@ -1,0 +1,12 @@
+{
+  "verbose": true,
+  "cloud-provider": "aws",
+  "port": 60000,
+  "deployment-name": "test-write",
+  "deployment-region": "us-east-1",
+  "user-storage": "persistent",
+  "system-storage": "key-value",
+  "heartbeat-frequency": 12,
+  "worker-queue": "key-value",
+  "distributor-queue": "dynamodb"
+}

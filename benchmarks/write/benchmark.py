@@ -22,7 +22,7 @@ args = parser.parse_args()
 
 # BENCHMARK_SIZES = [4]  # [2 ** i for i in range(2, 20)]
 size = args.size
-MEMORY = [128,256]
+MEMORY = [128,256,512,1024,2048]
 lambda_client = boto3.client("lambda", region_name="us-east-1")
 
 
@@ -37,24 +37,9 @@ def generate_binary_data(size):
 
 cfg = Config.deserialize(json.load(open(args.config)))
 service_name = f"faaskeeper-{cfg.deployment_name}"
-fname1 = "faaskeeper-dev-writer"
-fname2 = "faaskeeper-dev-distributor"
+fname1 = "faaskeeper-test-write-writer"
+fname2 = "faaskeeper-test-write-distributor"
 try:
-    client = FaaSKeeperClient(cfg, args.port, False)
-    client.start()
-    print(f"Connected {client.session_id}")
-
-    dfs = []
-    print(f"Execute size {size}")
-    data = generate_binary_data(size)
-    try:
-        client.delete(f"/size_{size}")
-    except faaskeeper.exceptions.NodeDoesntExistException:
-        pass
-    client.create(f"/size_{size}", data)
-    client.get_data(f"/size_{size}")
-
-    time.sleep(10)
     for memory in MEMORY:
         print(f"Update config to {memory}")
         lambda_client.update_function_configuration(
@@ -63,6 +48,21 @@ try:
         lambda_client.update_function_configuration(
             FunctionName=fname2, Timeout=30, MemorySize=memory
         )
+        client = FaaSKeeperClient(cfg, args.port, False)
+        client.start()
+        print(f"Connected {client.session_id}")
+
+        dfs = []
+        print(f"Execute size {size}")
+        data = generate_binary_data(size)
+        try:
+            client.delete(f"/size_{size}")
+        except faaskeeper.exceptions.NodeDoesntExistException:
+            pass
+        client.create(f"/size_{size}", data)
+        client.get_data(f"/size_{size}")
+
+        time.sleep(10)
         print("Done")
         experiment_begin = datetime.now().timestamp()
         time.sleep(20)
@@ -83,6 +83,8 @@ try:
                 continue
             end = datetime.now()
             results.append(int((end - begin) / timedelta(microseconds=1)))
+            if i % 10 == 0:
+                print(f"Repetition {i}")
         # sanity check
         experiment_end = datetime.now().timestamp()
         # if node.data != data:
@@ -106,12 +108,13 @@ try:
         )
         df_write["memory"] = memory
         df_write["size"] = size
-        dfs.append(df_write)
+        #dfs.append(df_write)
+        df_write.to_csv(f"{args.output_prefix}_{memory}.csv")
+        client.stop()
 
-    df = pd.concat(dfs, axis=0, ignore_index=True)
-    df.to_csv(f"{args.output_prefix}.csv")
+    #df = pd.concat(dfs, axis=0, ignore_index=True)
+    #df.to_csv(f"{args.output_prefix}.csv")
 
-    client.stop()
     print("Finished!")
 except Exception as e:
     import traceback
