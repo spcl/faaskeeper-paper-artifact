@@ -32,6 +32,19 @@ functions:
           path: watch
           method: POST
 
+  benchmarker_multiple:
+    handler: function/benchmark_multiple.benchmarker
+    timeout: 30
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - sqsQueueMultiple
+              - Arn
+      - http:
+          path: watch
+          method: POST
+
 resources:
   Resources:
     dynamoQueue:
@@ -57,6 +70,13 @@ resources:
         QueueName: BENCHMARK_SQS_QUEUE.fifo
         FifoQueue: True
         DelaySeconds: 0
+    sqsQueueMultiple:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: BENCHMARK_SQS_QUEUE_MULTIPLE.fifo
+        FifoQueue: True
+        DelaySeconds: 0
+        MaximumBatchingWindowInSeconds: 0
 
 plugins:
   - serverless-iam-roles-per-function
