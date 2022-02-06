@@ -68,7 +68,7 @@ def test_dynamo(dynamo_client, table_name, idx, data):
         Item=data,
     )
 
-def run(idx, rps, repetitions, size, bench_type, table_name, output_prefix, workers, barrier):
+def run(idx, actual_rps, rps, repetitions, size, bench_type, table_name, output_prefix, workers, barrier):
 
     dynamo_client = boto3.client('dynamodb', region_name=args.region)
     results = []
@@ -89,6 +89,7 @@ def run(idx, rps, repetitions, size, bench_type, table_name, output_prefix, work
     elif bench_type == 'synch':
         test_func = partial(test_sqs, sqs_queue_url)
 
+    print(f"Worker {idx} doing {rps}")
     period = 1.0/rps
     repetitions = rps * repetitions
     barrier.wait()
@@ -115,10 +116,10 @@ def run(idx, rps, repetitions, size, bench_type, table_name, output_prefix, work
     df_timing["workers"] = workers
     df_timing["repetitions"] = repetitions
 
-    print(f"Save to {output_prefix}_{rps}_{idx}.csv")
-    df_timing.to_csv(f"{output_prefix}_{rps}_{idx}.csv")
+    print(f"Save to {output_prefix}_{actual_rps}_{idx}.csv")
+    df_timing.to_csv(f"{output_prefix}_{actual_rps}_{idx}.csv")
 
-rps_arr = list(range(10,200,5))
+rps_arr = list(range(10,130,10))
 with ProcessPoolExecutor(max_workers=args.workers) as executor:
     
     mgr = multiprocessing.Manager()
@@ -127,8 +128,9 @@ with ProcessPoolExecutor(max_workers=args.workers) as executor:
     for rps in rps_arr:
         print(f"Start repetitions with rps {rps}")
         futures = []
-        for i in range(args.workers):
-            futures.append(executor.submit(run, i, rps, args.repetitions, args.size, args.benchmark, args.table_name, f"{args.output_prefix}_{args.workers}", args.workers, barrier))
+        for i in range(args.workers-1):
+            futures.append(executor.submit(run, i, rps, 120, args.repetitions, args.size, args.benchmark, args.table_name, f"{args.output_prefix}_{args.workers}", args.workers, barrier))
+        futures.append(executor.submit(run, args.workers-1, rps, rps, args.repetitions, args.size, args.benchmark, args.table_name, f"{args.output_prefix}_{args.workers}", args.workers, barrier))
         for f in futures:
             f.result()
         #concurrent.futures.wait(futures)
