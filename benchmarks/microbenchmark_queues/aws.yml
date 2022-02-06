@@ -26,31 +26,48 @@ functions:
       - sqs:
           arn:
             Fn::GetAtt:
-              - sqsQueue
+              - sqsQueueLatency
+              - Arn
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - sqsQueueLatencyFIFO
               - Arn
       - http:
-          path: watch
           method: POST
+          path: latency
 
   benchmarker_multiple:
     handler: function/benchmark_multiple.benchmarker
+    reservedConcurrency: 1
     timeout: 30
     events:
       - sqs:
           arn:
             Fn::GetAtt:
-              - sqsQueueMultiple
+              - sqsQueueThroughputFIFO
               - Arn
+          batchSize: 10
+          maximumBatchingWindow: 0
+
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - sqsQueueThroughput
+              - Arn
+          batchSize: 10
+          maximumBatchingWindow: 0
+ 
       - http:
-          path: watch
           method: POST
+          path: throughput
 
 resources:
   Resources:
     dynamoQueue:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        TableName: BENCHMARK_DYNAMO_QUEUE
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: key
@@ -64,19 +81,45 @@ resources:
             KeyType: RANGE
         StreamSpecification:
           StreamViewType: NEW_IMAGE
-    sqsQueue:
+    dynamoQueueThroughput:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: BENCHMARK_DYNAMO_QUEUE_THROUGHPUT
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: key
+            AttributeType: S
+          - AttributeName: timestamp
+            AttributeType: S
+        KeySchema:
+          - AttributeName: key
+            KeyType: HASH
+          - AttributeName: timestamp
+            KeyType: RANGE
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
+    sqsQueueThroughputFIFO:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: BENCHMARK_SQS_QUEUE.fifo
         FifoQueue: True
         DelaySeconds: 0
-    sqsQueueMultiple:
+    sqsQueueThroughput:
       Type: AWS::SQS::Queue
       Properties:
-        QueueName: BENCHMARK_SQS_QUEUE_MULTIPLE.fifo
+        QueueName: BENCHMARK_SQS_QUEUE
+        DelaySeconds: 0
+    sqsQueueLatencyFIFO:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: BENCHMARK_SQS_QUEUE_LATENCY.fifo
         FifoQueue: True
         DelaySeconds: 0
-        MaximumBatchingWindowInSeconds: 0
+    sqsQueueLatency:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: BENCHMARK_SQS_QUEUE_LATENCY
+        DelaySeconds: 0
 
 plugins:
   - serverless-iam-roles-per-function

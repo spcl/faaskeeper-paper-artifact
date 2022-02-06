@@ -1,5 +1,6 @@
 import json
 import socket
+import time
 
 connection = None
 is_cold = True
@@ -15,7 +16,9 @@ def benchmarker(event, context):
         connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         connection.settimeout(2)
         try:
+            #b = time.time()
             connection.connect((payload['ip'], int(payload['port'])))
+            #e = time.time()
             #by = len(json.dumps({"is_cold": is_cold, 'events': len(records), 'idx': record['attributes']['MessageDeduplicationId']}))
             #print("SEND", by)
             if idx == 0:

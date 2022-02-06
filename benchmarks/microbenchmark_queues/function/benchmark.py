@@ -11,8 +11,10 @@ def benchmarker(event, context):
 
         global connection
         if connection is None:
+
+            print("Begin RTT measurements")
             connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            connection.settimeout(2)
+            connection.settimeout(5)
             try:
                 connection.connect((payload['ip'], int(payload['port'])))
             except Exception as e:
@@ -20,13 +22,16 @@ def benchmarker(event, context):
                 connection = None
                 raise e
             print("Begin RTT measurements")
-            connection.sendall(b'0')
+            connection.sendall(b'AAAAAAAAAAAAAAA')
             is_cold = True
             for i in range(REPS):
                 data = connection.recv(32)
-                connection.sendall(b'0')
+                connection.sendall(b'AAAAAAAAAAAAAAA')
             print("Finished RTT measurements")
         else:
-            is_cold = False  
-            connection.sendall(json.dumps({"is_cold": is_cold}).encode())
+            try:
+                is_cold = False  
+                connection.sendall(json.dumps({"is_cold": is_cold}).encode())
+            except Exception as e:
+                print(e)
 
