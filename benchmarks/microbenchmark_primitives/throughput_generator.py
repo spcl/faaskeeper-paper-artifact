@@ -68,6 +68,38 @@ def test_dynamo(dynamo_client, table_name, idx, data):
         Item=data,
     )
 
+lock_lifetime = 5
+def test_lock(dynamo_client, table_name, idx, data):
+    data = {
+        "data": {'B': data},
+        "key": {'S': f"/BENCHMARK_{idx}"}
+    }
+    timestamp = int(time.time())
+    ret = dynamo_client.update_item(
+        TableName=table_name,
+        # path to the node
+        Key={"key": {"S": f"/BENCHMARK_{idx}"}},
+        # create timelock
+        UpdateExpression="SET timelock = :newlockvalue",
+        # lock doesn't exist or it's already expired
+        ConditionExpression="(attribute_not_exists(timelock)) or "
+        "(timelock < :newlockshifted)",
+        # timelock value
+        ExpressionAttributeValues={
+             ":newlockvalue": {"N": str(timestamp)},
+             ":newlockshifted": {"N": str(timestamp - lock_lifetime)},
+        }
+    )
+
+    # remove lock
+    ret = dynamo_client.update_item(
+        TableName=table_name,
+        # path to the node
+        Key={"key": {"S": f"/BENCHMARK_{idx}"}},
+        # create timelock
+        UpdateExpression="REMOVE timelock",
+    )
+
 def run(idx, actual_rps, rps, repetitions, size, bench_type, table_name, output_prefix, workers, barrier):
 
     dynamo_client = boto3.client('dynamodb', region_name=args.region)
@@ -86,8 +118,16 @@ def run(idx, actual_rps, rps, repetitions, size, bench_type, table_name, output_
             TableName=table_name,
             Item=data,
         )
-    elif bench_type == 'synch':
-        test_func = partial(test_sqs, sqs_queue_url)
+    elif bench_type == 'lock':
+        test_func = partial(test_lock, dynamo_client, table_name)
+        data = {
+            "data": {'B': input_data},
+            "key": {'S': f"/BENCHMARK_{idx}"}
+        }
+        dynamo_client.put_item(
+            TableName=table_name,
+            Item=data,
+        )
 
     print(f"Worker {idx} doing {rps}")
     period = 1.0/rps
