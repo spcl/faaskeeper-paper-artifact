@@ -1,2 +1,3 @@
 Begin benchmarking invocations with the queue sqs_fifo
-Start repetitions with size 64
+Start repetitions with size 64, data len 64
+Send 600
