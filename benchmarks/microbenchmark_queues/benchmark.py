@@ -15,9 +15,12 @@ parser = argparse.ArgumentParser(description="Run microbenchmarks.")
 parser.add_argument('--region', type=str)
 parser.add_argument('--output-prefix', type=str)
 parser.add_argument('--repetitions', type=int)
+parser.add_argument('--memory', type=int)
 parser.add_argument('--queue', type=str)
-parser.add_argument('--fname', type=str)
+parser.add_argument('--size', type=int)
 parser.add_argument('--queue-name', type=str)
+parser.add_argument('--message-id', type=int)
+parser.add_argument('--fname', type=str)
 parser.add_argument('--port', type=int)
 args = parser.parse_args()
 
@@ -39,8 +42,8 @@ sqs_queue_url = None
 # base64 encoded string begins at 4 bytes anyway
 #BENCHMARK_SIZES = [64, 1024, 32*1024, 64*1024, 128*1024]
 #MEMORY_SIZES = [128, 512, 1024, 2048]
-BENCHMARK_SIZES = [64]#, 1024, 32*1024, 64*1024, 128*1024]
-MEMORY_SIZES = [128]#, 512, 1024, 2048]
+BENCHMARK_SIZES = [64, 1024, 32*1024, 64*1024, 128*1024]
+MEMORY_SIZES = [128, 512, 1024, 2048]
 
 def generate_binary_data(size):
     # for n bytes the length of base64 string is 4 * n / 3 (unpadded)
@@ -86,79 +89,60 @@ def test_sqs_fifo(queue_url, data, msg_id, addr, port):
 
 COMMUNICATION_REPS = 100
 dfs = []
-for memory in MEMORY_SIZES:
+queue_message_id = args.message_id
 
-    print(f"Update config to {memory}")
-    lambda_client.update_function_configuration(
-        FunctionName=args.fname, MemorySize=memory
+#memory = args.memory
+#print(f"Update config to {memory}")
+#lambda_client.update_function_configuration(
+#    FunctionName=args.fname, MemorySize=memory
+#)
+#print("Done")
+#time.sleep(10)
+#print("Begin")
+
+try:
+    conn, addr = sock.accept()
+except socket.timeout:
+    pass
+except Exception as e:
+    raise e
+else:
+    print('Connected, beginning RTT measurement')
+
+if args.queue in ['sqs', 'sqs_fifo']:
+    response = sqs_client.get_queue_url(
+        QueueName=args.queue_name
     )
-    print("Done")
-    time.sleep(10)
-    print("Begin")
+    sqs_queue_url = response['QueueUrl']
 
-    if args.queue in ['sqs', 'sqs_fifo']:
-        response = sqs_client.get_queue_url(
-            QueueName=args.queue_name
-        )
-        sqs_queue_url = response['QueueUrl']
+test_func = None
+if args.queue == 'sqs_fifo':
+    test_func = partial(test_sqs_fifo, sqs_queue_url)
 
-    test_func = None
-    if args.queue == 'sqs_fifo':
-        test_func = partial(test_sqs_fifo, sqs_queue_url)
+print(f'Begin benchmarking invocations with the queue {args.queue}')
 
-    print('Connect to the serverless worker.')
-    sock, addr, port = prepare_socket()
-    test_func(b'0', 0, addr, port)
-    timing_results = []
-    while True:
-        try:
-            conn, addr = sock.accept()
-        except socket.timeout:
-            pass
-        except Exception as e:
-            raise e
-        else:
-            print('Connected, beginning RTT measurement')
-            data = conn.recv(32)
-            for i in range(COMMUNICATION_REPS):
-                begin = datetime.now()
-                conn.sendall(b'0')
-                data = conn.recv(32)
-                end = datetime.now()
-                timing_results.append(int((end - begin) / timedelta(microseconds=1)))
-            print('Finished RTT measurement')
-            break
+results = []
+size = args.size
+data = generate_binary_data(args.size)
+print(f"Start repetitions with size {size}")
+total_begin = datetime.now()
+for i in range(args.repetitions):
+    begin = datetime.now()
+    #test_func(data, queue_message_id, addr, port)
+    print("sent")
+    end = datetime.now()
+    #results.append([int((end - begin) / timedelta(microseconds=1)), i])
+    results.append([end.timestamp(), i])
+    queue_message_id += 1
+total_end = datetime.now()
+results.append([total_begin, -1])
+results.append([total_begin, -2])
+df_timing = pd.DataFrame(data=results, columns=["time", "idx"])
+df_timing["queue"] = args.queue
+df_timing["memory"] = args.memory
+df_timing["size"] = size
+df_timing["type"] = 'send'
 
-    df_timing = pd.DataFrame(data=timing_results, columns=["data"])
-    df_timing["queue"] = args.queue
-    df_timing["memory"] = memory
-    df_timing["type"] = 'rtt'
-    df_timing["is_cold"] = True
-    dfs.append(df_timing)
-    print(f'Begin benchmarking invocations with the queue {args.queue}')
-    results = []
-    for size in BENCHMARK_SIZES:
-
-        data = generate_binary_data(size)
-        print(f"Start repetitions with size {size}")
-        for i in range(args.repetitions):
-            test_func(data, i + 1, addr, port)
-            begin = datetime.now()
-            data = conn.recv(1024)
-            end = datetime.now()
-            ret = json.loads(data.decode())
-            results.append([int((end - begin) / timedelta(microseconds=1)), ret['is_cold']])
-
-            if i % 10 == 0:
-                print(f"Conducted {i} repetitions out of {args.repetitions}")
-        df_invoc = pd.DataFrame(data=results, columns=["data", "is_cold"])
-        df_invoc["queue"] = args.queue
-        df_invoc["size"] = int(size)
-        df_invoc["memory"] = memory
-        df_invoc["type"] = 'invocation'
-        dfs.append(df_invoc)
-
-df = pd.concat(dfs, axis=0, ignore_index=True)
-df.to_csv(f"{args.output_prefix}.csv")
+df_timing.to_csv(f"{args.output_prefix}.csv")
 
 
