@@ -27,6 +27,7 @@ args = parser.parse_args()
 
 sqs_client = boto3.client('sqs', region_name=args.region)
 lambda_client = boto3.client('lambda', region_name=args.region)
+dynamo_client = boto3.client('dynamodb', region_name=args.region)
 sqs_queue_url = None
 
 """
@@ -51,8 +52,8 @@ def generate_binary_data(size):
     # then it's padded to 4 bytes
     # so the reverse is: n * 3/4 - we always select multiples of fours
     original_size = int(size * 3 / 4)
-    #return base64.b64encode(bytearray([1] * original_size))
-    return bytes(bytearray([1]*original_size))
+    return base64.b64encode(bytearray([1] * original_size))
+    #return bytes(bytearray([1]*original_size))
 
 def prepare_socket():
 
@@ -70,11 +71,41 @@ def prepare_socket():
 
     return sock, addr, port
 
+def test_lambda(func_name, data, msg_id, addr, port):
+    body = json.dumps({
+        'Records': [{
+            "ip": f"{addr}",
+            "port": port,
+            "data": data.decode()
+        }]
+    })
+    #print(f"Send data len {len(data)}")
+    lambda_client.invoke(FunctionName=func_name, InvocationType='Event', Payload=body.encode('utf-8'))
+
+def test_sqs(queue_url, data, msg_id, addr, port):
+    body = json.dumps({
+        "ip": f"{addr}",
+        "port": port
+    })
+    #print(f"Send data len {len(data)}")
+    response = sqs_client.send_message(
+        QueueUrl=queue_url,
+        MessageBody=body,
+        MessageAttributes={
+            'body': {
+                'BinaryValue': data,
+                'DataType': 'Binary'
+            }
+        }
+    )
+    return response['MessageId']
+
 def test_sqs_fifo(queue_url, data, msg_id, addr, port):
     body = json.dumps({
         "ip": f"{addr}",
         "port": port
     })
+    #print(f"Send data len {len(data)}")
     response = sqs_client.send_message(
         QueueUrl=queue_url,
         MessageBody=body,
@@ -87,6 +118,27 @@ def test_sqs_fifo(queue_url, data, msg_id, addr, port):
         MessageGroupId='0',
         MessageDeduplicationId=str(msg_id)
     )
+    return msg_id
+import uuid
+def test_dynamo(queue_url, data, msg_id, addr, port):
+    body = json.dumps({
+        "ip": f"{addr}",
+        "port": port
+    })
+    #print(f"Send data len {len(data)}")
+    timestamp = f"{str(uuid.uuid4())[0:8]}"
+    data = {
+        "ip": {'S': f"{addr}"},
+        "port": {'S': f"{port}"},
+        "data": {'B': data},
+        "timestamp": {'S': timestamp},
+        "key": {'S': "BENCHMARK"}
+    }
+    dynamo_client.put_item(                                            
+        TableName=queue_url,
+        Item=data,
+    )
+    return timestamp
 
 req = urllib.request.urlopen("https://checkip.amazonaws.com")
 addr = req.read().decode().strip()
@@ -108,17 +160,27 @@ if args.queue in ['sqs', 'sqs_fifo']:
         QueueName=args.queue_name
     )
     sqs_queue_url = response['QueueUrl']
+elif args.queue == 'lambda':
+    func_name = args.queue_name
+else:
+    dynamo_table = args.queue_name
 
 test_func = None
 if args.queue == 'sqs_fifo':
     test_func = partial(test_sqs_fifo, sqs_queue_url)
+elif args.queue == 'sqs':
+    test_func = partial(test_sqs, sqs_queue_url)
+elif args.queue == 'dynamo':
+    test_func = partial(test_dynamo, dynamo_table)
+elif args.queue == 'lambda':
+    test_func = partial(test_lambda, func_name)
 
 print(f'Begin benchmarking invocations with the queue {args.queue}')
 
 results = []
 size = args.size
 data = generate_binary_data(args.size)
-print(f"Start repetitions with size {size}")
+print(f"Start repetitions with size {size}, data len {len(data)}")
 total_begin = time.time()# datetime.now()
 
 period = 1.0/args.rps
@@ -127,16 +189,17 @@ start = time.time()
 for i in range(repetitions):
     #begin = time.time()
     #time.sleep(0.001)
-    test_func(data, queue_message_id, addr, args.port)
+    _id = test_func(data, queue_message_id, addr, args.port)
     #print("sent")
     end = time.time()
-    results.append([end, i])
+    results.append([end, _id])
     queue_message_id += 1
     delta = start + period * (i +1) - time.time()
     if delta > 0:
         time.sleep(delta)
 
 total_end = time.time()#datetime.now()
+print(f"Send {repetitions}")
 
 #for val in results:
 #    val[0] = val[0].timestamp()

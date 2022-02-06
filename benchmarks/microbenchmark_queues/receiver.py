@@ -82,7 +82,7 @@ for i in range(args.repetitions):
         #a = 1
     except socket.timeout:
         print("Timeout")
-        break
+        continue
         #pass
     except Exception as e:
         raise e
@@ -100,6 +100,8 @@ for i in range(len(timing_results)):
         timing_results[i] = [timing_results[i][0], data['idx'], data['events'], data['is_cold']]
     except json.decoder.JSONDecodeError:
         break
+
+print(f"Received {args.repetitions}")
 
 df_timing = pd.DataFrame(data=timing_results, columns=["timestamp", "idx", "events", "is_cold"])
 df_timing["queue"] = args.queue
