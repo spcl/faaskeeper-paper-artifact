@@ -1,0 +1,26 @@
+service: faaskeeper-microbenchmark-primitives
+
+provider:
+  name: aws
+  runtime: python3.8
+  stage: dev
+  region: us-east-1
+  environment:
+    DYNAMODB_TABLE: BENCHMARK_QUEUE
+
+resources:
+  Resources:
+    dynamoQueue:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: BENCHMARK_DYNAMO_PRIMITIVES
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: key
+            AttributeType: S
+        KeySchema:
+          - AttributeName: key
+            KeyType: HASH
+plugins:
+  - serverless-iam-roles-per-function
+
