@@ -1,2 +1,3 @@
 Begin benchmarking invocations with the queue dynamo
-Start repetitions with size 64
+Start repetitions with size 64, data len 64
+Send 550
