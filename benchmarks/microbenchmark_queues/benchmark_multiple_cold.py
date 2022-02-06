@@ -68,6 +68,7 @@ def prepare_socket():
     sock.settimeout(5)
     sock.listen(1)
 
+    print(addr, port)
     return sock, addr, port
 
 def test_lambda(func_name, data, msg_id, addr, port):
@@ -240,37 +241,7 @@ for memory in MEMORY_SIZES:
     else:
         raise NotImplementedError()
 
-
-    print('Connect to the serverless worker.')
     sock, addr, port = prepare_socket()
-    test_func(b'0', queue_message_id, addr, port)
-    queue_message_id += 1
-    timing_results = []
-    while True:
-        try:
-            conn, addr = sock.accept()
-        except socket.timeout as e:
-            print(e)
-        except Exception as e:
-            raise e
-        else:
-            print('Connected, beginning RTT measurement')
-            data = conn.recv(64)
-            for i in range(COMMUNICATION_REPS):
-                begin = time.time()
-                conn.sendall(b'AAAAAAAAAAAAAAA')
-                data = conn.recv(64)
-                end = time.time()
-                timing_results.append(end - begin)
-            print('Finished RTT measurement')
-            break
-
-    df_timing = pd.DataFrame(data=timing_results, columns=["data"])
-    df_timing["size"] = 0
-    df_timing["queue"] = args.queue
-    df_timing["memory"] = memory
-    df_timing["type"] = 'rtt'
-    dfs.append(df_timing)
     print(f'Begin benchmarking invocations with the queue {args.queue}')
     results = []
     for size in BENCHMARK_SIZES:
@@ -281,10 +252,17 @@ for memory in MEMORY_SIZES:
             test_func(data, queue_message_id, addr, port)
             queue_message_id += 1
             begin = time.time()
-            recv_data = conn.recv(1024)
-            end = time.time()
-            ret = json.loads(recv_data.decode())
-            results.append([(end - begin), ret['is_cold']])
+            try:
+                conn, _ = sock.accept()
+                recv_data = conn.recv(1024)
+                end = time.time()
+                ret = json.loads(recv_data.decode())
+                results.append([(end - begin), ret['is_cold']])
+                conn.close()
+            except socket.timeout as e:
+                print(e)
+            except Exception as e:
+                raise e
 
             if i % 10 == 0:
                 print(f"Conducted {i} repetitions out of {args.repetitions}")

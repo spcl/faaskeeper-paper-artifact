@@ -4,10 +4,24 @@ import socket
 connection = None
 REPS = 100
 
+def get_object(obj: dict):
+    return next(iter(obj.values()))
+
 def benchmarker(event, context):
     for record in event['Records']:
-        payload = record["body"]
-        payload = json.loads(payload)
+        if 'dynamodb' in record:
+            payload = record["dynamodb"]["NewImage"]
+            ip = get_object(payload["ip"])
+            port = int(get_object(payload["port"]))
+        elif 'body' in record:
+            payload = record["body"]
+            payload = json.loads(payload)
+            ip = payload['ip']
+            port = int(payload['port'])
+        else:
+            payload = record
+            ip = payload['ip']
+            port = int(payload['port'])
 
         global connection
         if connection is None:
@@ -16,7 +30,7 @@ def benchmarker(event, context):
             connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             connection.settimeout(5)
             try:
-                connection.connect((payload['ip'], int(payload['port'])))
+                connection.connect((ip, port))
             except Exception as e:
                 print("Failed connection!")
                 connection = None
@@ -25,7 +39,7 @@ def benchmarker(event, context):
             connection.sendall(b'AAAAAAAAAAAAAAA')
             is_cold = True
             for i in range(REPS):
-                data = connection.recv(32)
+                data = connection.recv(64)
                 connection.sendall(b'AAAAAAAAAAAAAAA')
             print("Finished RTT measurements")
         else:
