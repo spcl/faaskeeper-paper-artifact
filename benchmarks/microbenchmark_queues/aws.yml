@@ -9,6 +9,14 @@ provider:
     DYNAMODB_TABLE: BENCHMARK_QUEUE
 
 functions:
+  benchmarker_cold:
+    handler: function/benchmark_tcp_cold.benchmarker
+    reservedConcurrency: 1
+    timeout: 30
+    events:
+      - http:
+          method: POST
+          path: latency
   benchmarker:
     handler: function/benchmark.benchmarker
     reservedConcurrency: 1
@@ -42,6 +50,16 @@ functions:
     reservedConcurrency: 1
     timeout: 30
     events:
+      - stream:
+          type: dynamodb
+          batchSize: 1000
+          batchWindow: 0
+          startingPosition: LATEST
+          maximumRetryAttempts: 0
+          arn:
+            Fn::GetAtt:
+              - dynamoQueueThroughput
+              - StreamArn
       - sqs:
           arn:
             Fn::GetAtt:
@@ -55,8 +73,8 @@ functions:
             Fn::GetAtt:
               - sqsQueueThroughput
               - Arn
-          batchSize: 10
-          maximumBatchingWindow: 0
+          batchSize: 1000
+          maximumBatchingWindow: 1
  
       - http:
           method: POST
