@@ -1,4 +1,4 @@
-,type,value,memory,function,repetitions
+type,value,memory,function,repetitions
 total,7.612854957580566,2048,writer,200
 lock,1.5442612171173096,2048,writer,200
 atomic,1.6473469734191895,2048,writer,200
