@@ -13,7 +13,7 @@ args = parser.parse_args()
 
 logs_client = boto3.client("logs", region_name='us-east-1')
 
-MEMORY_SIZES = [128, 256, 512, 1024, 2048]
+MEMORY_SIZES = [512, 1024, 2048]
 dfs = []
 for memory in MEMORY_SIZES:
 
@@ -35,7 +35,7 @@ for memory in MEMORY_SIZES:
     # now query logs
 
     for function in ["writer", "distributor"]:
-        query = "fields @timestamp, @message | filter @message like /REPORT/ or @message like /Read/"
+        query = "fields @timestamp, @message | filter @message like /REPORT/ or @message like /Read/ or @message like /RESULT_/"
         log_group = f"/aws/lambda/faaskeeper-test-write-{function}"
         #print(log_group)
         #print(int(start_timestamp))
@@ -87,6 +87,8 @@ for memory in MEMORY_SIZES:
                             results.append([*matched_data[res2[0]], *res2])
                         else:
                             pass
+                    #elif "RESULT_" in r["value"]:
+                    #    print(r["value"])
                             #print(f"Unknonw: {res2[0]}")
                         #print(res)
                         #print(res2)

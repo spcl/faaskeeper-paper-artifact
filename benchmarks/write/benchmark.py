@@ -22,7 +22,8 @@ args = parser.parse_args()
 
 # BENCHMARK_SIZES = [4]  # [2 ** i for i in range(2, 20)]
 size = args.size
-MEMORY = [128,256,512,1024,2048]
+#MEMORY = [128,256,512,1024,2048]
+MEMORY = [512,1024,2048]
 lambda_client = boto3.client("lambda", region_name="us-east-1")
 
 
@@ -31,8 +32,8 @@ def generate_binary_data(size):
     # then it's padded to 4 bytes
     # so the reverse is: n * 3/4 - we always select multiples of fours
     original_size = int(size * 3 / 4)
-    # return base64.b64encode(bytearray([1] * original_size))
-    return bytes(bytearray([1] * original_size))
+    return base64.b64encode(bytearray([1] * original_size))
+    #return bytes(bytearray([1] * original_size))
 
 
 cfg = Config.deserialize(json.load(open(args.config)))
