@@ -87,9 +87,9 @@ for memory in MEMORY_SIZES:
                             results.append([*matched_data[res2[0]], *res2])
                         else:
                             pass
-                    #elif "RESULT_" in r["value"]:
-                    #    print(r["value"])
-                            #print(f"Unknonw: {res2[0]}")
+                    elif "RESULT_" in r["value"]:
+                        print(r["value"])
+                        #print(f"Unknonw: {res2[0]}")
                         #print(res)
                         #print(res2)
         #print(results)
