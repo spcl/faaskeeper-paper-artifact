@@ -5,8 +5,10 @@ import socket
 import sys
 import time
 import urllib
+import multiprocessing
 from datetime import datetime, timedelta
 from functools import partial
+from google.cloud import pubsub_v1
 
 import pandas as pd
 import boto3
@@ -23,10 +25,24 @@ parser.add_argument('--port', type=int)
 parser.add_argument('--memory', type=int)
 args = parser.parse_args()
 
-sqs_client = boto3.client('sqs', region_name=args.region)
-lambda_client = boto3.client('lambda', region_name=args.region)
-dynamo_client = boto3.client('dynamodb', region_name=args.region)
+# sqs_client = boto3.client('sqs', region_name=args.region)
+# lambda_client = boto3.client('lambda', region_name=args.region)
+# dynamo_client = boto3.client('dynamodb', region_name=args.region)
 sqs_queue_url = None
+
+
+# the batch will be sent if any of the setting is met.
+batch_settings = pubsub_v1.types.BatchSettings(
+    max_messages=10,  # default 100, now it is 10
+    max_bytes= 1 * 1000 * 1000,  # default 1 MB, still 1 MB -> 1000 * 1000 KB
+    max_latency=0.0001,  # default 10 ms, now is .1ms
+)
+
+publisher_options = pubsub_v1.types.PublisherOptions(enable_message_ordering=True) # enable FIFO
+publisher_client = pubsub_v1.PublisherClient(publisher_options=publisher_options, batch_settings= batch_settings)
+_topic_id = "benchmark"
+_project_id = "wide-axiom-402003"
+_topic_path = publisher_client.topic_path(_project_id, _topic_id)
 
 """
     This benchmark evaluates the time needed to schedule and execute a serverless
@@ -69,6 +85,16 @@ def prepare_socket():
     sock.listen(1)
 
     return sock, addr, port
+
+def test_pubsub_fifo(topic_name, data, queue_message_id, addr, port):
+    # push subs is one by one
+    payload = {
+        "ip": f"{addr}",
+        "port": port,
+        "data": data.decode()
+    }
+    data = json.dumps(payload).encode("utf-8")
+    publisher_client.publish(topic_name, data=data, ordering_key= "0")
 
 def test_lambda(func_name, data, msg_id, addr, port):
     body = json.dumps({
@@ -210,12 +236,12 @@ dfs = []
 MEMORY_SIZES = [args.memory]
 for memory in MEMORY_SIZES:
 
-    print(f"Update config to {memory}")
-    lambda_client.update_function_configuration(
-        FunctionName=args.fname, MemorySize=memory
-    )
-    print("Done")
-    time.sleep(15)
+    # print(f"Update config to {memory}")
+    # lambda_client.update_function_configuration(
+    #     FunctionName=args.fname, MemorySize=memory
+    # )
+    # print("Done")
+    # time.sleep(15)
     print("Begin")
 
     if args.queue in ['sqs', 'sqs_fifo']:
@@ -237,6 +263,8 @@ for memory in MEMORY_SIZES:
         test_func = partial(test_dynamo, dynamo_table)
     elif args.queue == 'lambda':
         test_func = partial(test_lambda, func_name)
+    elif args.queue == 'pubsub':
+        test_func = partial(test_pubsub_fifo, _topic_path) # dummy function
     else:
         raise NotImplementedError()
 
@@ -254,6 +282,7 @@ for memory in MEMORY_SIZES:
         except Exception as e:
             raise e
         else:
+            # THIS IS FOR TESTING NOTIFY
             print('Connected, beginning RTT measurement')
             data = conn.recv(64)
             for i in range(COMMUNICATION_REPS):
@@ -271,6 +300,7 @@ for memory in MEMORY_SIZES:
     df_timing["memory"] = memory
     df_timing["type"] = 'rtt'
     dfs.append(df_timing)
+    # AND THIS IS FOR QUEUE LATENCY
     print(f'Begin benchmarking invocations with the queue {args.queue}')
     results = []
     for size in BENCHMARK_SIZES:
