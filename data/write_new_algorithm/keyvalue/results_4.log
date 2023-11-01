@@ -1,0 +1,691 @@
+Script started on 2023-11-01 19:49:59+00:00 [TERM="screen" TTY="/dev/pts/1" COLUMNS="225" LINES="56"]
+Update config to 512
+Done
+Connected ba2aea75
+Execute size 4
+4
+4
+Done
+Begin
+Execute memory 512
+4
+Repetition 0
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 10
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 20
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 30
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 40
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 50
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 60
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 70
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 80
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 90
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 100
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 110
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 120
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 130
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 140
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 150
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 160
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 170
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 180
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 190
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Update config to 1024
+Done
+Connected b9ee20a1
+Execute size 4
+4
+4
+Done
+Begin
+Execute memory 1024
+4
+Repetition 0
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 10
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 20
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 30
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 40
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 50
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 60
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 70
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 80
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 90
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 100
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 110
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 120
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 130
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 140
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 150
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 160
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 170
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 180
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 190
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Update config to 2048
+Done
+Connected 14dc3bf4
+Execute size 4
+4
+4
+Done
+Begin
+Execute memory 2048
+4
+Repetition 0
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 10
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 20
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 30
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 40
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 50
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 60
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 70
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 80
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 90
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 100
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 110
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 120
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 130
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 140
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 150
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 160
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 170
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 180
+4
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Repetition 190
+4
+4
+4
+4
+4
+4
+4
+4
+4
+Finished!
+
+Script done on 2023-11-01 19:53:45+00:00 [COMMAND_EXIT_CODE="0"]
