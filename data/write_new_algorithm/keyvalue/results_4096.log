@@ -1,13 +1,13 @@
-Script started on 2023-11-01 20:12:58+00:00 [TERM="screen" TTY="/dev/pts/1" COLUMNS="225" LINES="56"]
-Update config to 512
+Script started on 2023-11-01 20:48:50+00:00 [TERM="screen" TTY="/dev/pts/1" COLUMNS="225" LINES="56"]
+Update config to 1024
 Done
-Connected 22385459
+Connected ff4d2d15
 Execute size 4096
 4096
 4096
 Done
 Begin
-Execute memory 512
+Execute memory 1024
 4096
 Repetition 0
 4096
@@ -228,15 +228,15 @@ Repetition 190
 4096
 4096
 4096
-Update config to 1024
+Update config to 2048
 Done
-Connected e9e23f4b
+Connected c7a8bd4f
 Execute size 4096
 4096
 4096
 Done
 Begin
-Execute memory 1024
+Execute memory 2048
 4096
 Repetition 0
 4096
@@ -266,31 +266,197 @@ Repetition 20
 4096
 4096
 4096
-FAILURE ON 25
 4096
-[2023-11-01 20:15:30,729] (root) Received result 29
-[2023-11-01 20:15:30,729] (root) Current futures [(30, <faaskeeper.operations.SetData object at 0x7f46cc543460>, <faaskeeper.threading.Future object at 0x7f46cc4b2460>, 1698869725.728936)]
-Exception in thread Thread-6:
-Traceback (most recent call last):
-  File "/usr/lib/python3.8/threading.py", line 932, in _bootstrap_inner
-    self.run()
-  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/faaskeeper/queue.py", line 629, in run
-    assert futures[0][0] == req_id
-AssertionError
-\
-^CTraceback (most recent call last):
-  File "benchmark.py", line 93, in <module>
-    node = client.set_data(f"/size_{size}", data, -1)
-  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/faaskeeper/client.py", line 353, in set_data
-    return self.set_data_async(path, value, version).get()
-  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/faaskeeper/threading.py", line 24, in get
-    self.wait()
-  File "/home/ubuntu/data/python-venv/lib/python3.8/site-packages/faaskeeper/threading.py", line 32, in wait
-    self._event.wait()
-  File "/usr/lib/python3.8/threading.py", line 558, in wait
-    signaled = self._cond.wait(timeout)
-  File "/usr/lib/python3.8/threading.py", line 302, in wait
-    waiter.acquire()
-KeyboardInterrupt
+4096
+4096
+4096
+4096
+Repetition 30
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 40
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 50
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 60
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 70
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 80
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 90
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 100
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 110
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 120
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 130
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 140
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 150
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 160
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 170
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 180
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Repetition 190
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+4096
+Finished!
 
-Script done on 2023-11-01 20:15:48+00:00 [COMMAND_EXIT_CODE="130"]
+Script done on 2023-11-01 20:51:25+00:00 [COMMAND_EXIT_CODE="0"]
