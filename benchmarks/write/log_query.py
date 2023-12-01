@@ -13,7 +13,11 @@ args = parser.parse_args()
 
 logs_client = boto3.client("logs", region_name='us-east-1')
 
-MEMORY_SIZES = [512, 1024, 2048]
+# dev-kv
+deployment_name = "dev-per"
+service_name = f"faaskeeper-{deployment_name}"
+# MEMORY_SIZES = [512, 1024, 2048]
+MEMORY_SIZES = [2048]
 dfs = []
 for memory in MEMORY_SIZES:
 
@@ -36,7 +40,7 @@ for memory in MEMORY_SIZES:
 
     for function in ["writer", "distributor"]:
         query = "fields @timestamp, @message | filter @message like /REPORT/ or @message like /Read/ or @message like /RESULT_/"
-        log_group = f"/aws/lambda/faaskeeper-test-write-{function}"
+        log_group = f"/aws/lambda/{service_name}-{function}"
         #print(log_group)
         #print(int(start_timestamp))
         #print(int(end_timestamp)+1)
