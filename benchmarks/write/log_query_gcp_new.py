@@ -1,5 +1,6 @@
 from google.cloud import logging as gcp_logging
 import pandas as pd
+import math
 
 logging_client = gcp_logging.Client()
 #logger = logging_client.logger("cloudfunctions.googleapis.com%2Fcloud-functions")
@@ -24,8 +25,8 @@ def wrapper(gen):
             sleep(30)
 
 from datetime import datetime, timedelta, timezone
-start_time = 1701120201.746827
-end_time = 1701120537.629221
+start_time = 1700977949.064928
+end_time = 1700978284.283415
 memory = 512
 
 timestamps = []
@@ -63,15 +64,19 @@ for f_n in function_names:
 
             # convert to nanoseconds
             m = float(invoc.http_request['latency'][0:-1]) * 1000 * 1000 * 1000
-            results.append([m, memory,f_n])
+            # convert to milliseconds
+            rm = math.ceil(m * 0.00000001)
+            # print(m * 0.000001 ,rm * 100)
+            # break
+            results.append([ m * 0.000001 ,rm * 100, memory,f_n])
             entries += 1
 
 df = pd.DataFrame(
     data=results,
-    columns=["billed_time", "memory", "function"],
+    columns=["time","billed_time", "memory", "function"],
 )
 
-df.to_csv(f"persistent_262144_1vCPU_512_processed.csv")
+df.to_csv(f"persistent_262144_512_processed.csv")
 #for page in pages:  # invocations.pages:
 #for invoc in page:
 #    entries += 1
