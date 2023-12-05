@@ -9,22 +9,26 @@ import pandas as pd
 #df = pd.read_csv('../../data/microbenchmark_queues/sqs_fifo.csv')
 sqs = pd.read_csv('../../data/microbenchmark_queues/sqs/sqs_2048.csv')
 sqs_fifo = pd.read_csv('../../data/microbenchmark_queues/sqs_fifo/sqs_fifo_2048.csv')
-pubsub_fifo = pd.read_csv('../../pubsub_test_real_cold_100_6_0001.csv')
+pubsub_fifo = pd.read_csv('../../data/microbenchmark_queues/gcp/pubsub_fifo/pubsub_fifo_2048.csv')
 dynamo = pd.read_csv('../../data/microbenchmark_queues/dynamo/dynamodb_2048.csv')
+pubsub = pd.read_csv('../../data/microbenchmark_queues/gcp/pubsub/pubsub_2048.csv')
+cloud_function = pd.read_csv('../../data/microbenchmark_queues/gcp/direct/cloud_function_2048.csv')
 lambda_ = pd.read_csv('../../data/microbenchmark_queues/direct/lambda_2048.csv')
 lambda_cold_ = pd.read_csv('../../data/microbenchmark_queues/direct/lambda_cold_2048.csv')
 
 sqs_subset = sqs.loc[(sqs['type'] == 'invocation') & (sqs['is_cold'] == False)]
 sqs_fifo_subset = sqs_fifo.loc[(sqs_fifo['type'] == 'invocation') & (sqs_fifo['is_cold'] == False)]
+pubsub_subset = pubsub.loc[(pubsub_fifo['type'] == 'invocation') & (pubsub_fifo['is_cold'] == False)]
 pubsub_fifo_subset = pubsub_fifo.loc[(pubsub_fifo['type'] == 'invocation') & (pubsub_fifo['is_cold'] == False)]
 dynamo = dynamo.loc[(dynamo['type'] == 'invocation') & (dynamo['is_cold'] == False)]
+cloud_function = cloud_function.loc[(lambda_['type'] == 'invocation') & (lambda_['is_cold'] == False)]
 lambda_ = lambda_.loc[(lambda_['type'] == 'invocation') & (lambda_['is_cold'] == False)]
 lambda_cold_ = lambda_cold_.loc[(lambda_cold_['type'] == 'invocation')]
 
 for name, val, arg in [('Min', 'min', None), ('p50', 'median', None), ('p95', 'quantile', .95), ('p99', 'quantile', .99), ('Max', 'max',  None)]:
 
     vals = []
-    for data in [lambda_, sqs_subset, sqs_fifo_subset, pubsub_fifo_subset, dynamo]:
+    for data in [cloud_function, pubsub_subset, pubsub_fifo_subset]:
         sqs_group = data.groupby(['memory', 'size'], as_index=False)['data']
         func = getattr(sqs_group, val)
         if arg is not None:

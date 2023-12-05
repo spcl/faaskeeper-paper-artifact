@@ -30,7 +30,6 @@ try:
 
     client = KazooClient(hosts=f'{args.addr}:2181')
     client.start()
-
     dfs = []
     for size in BENCHMARK_SIZES:
 
@@ -60,10 +59,7 @@ try:
         df_write = pd.DataFrame(data=results, columns=["data"])
         df_write['native_data'] = 0
         df_write["op"] = "read"
-        df_write = df_write.append(
-            {"data": 0, "op": "read_capacity"},
-            ignore_index=True,
-        )
+        df_write = pd.concat([df_write, pd.DataFrame({"data": [0], "op": ["read_capacity"]})], ignore_index=True)
         df_write["size"] = size
         dfs.append(df_write)
 
