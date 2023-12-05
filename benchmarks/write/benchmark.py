@@ -59,11 +59,11 @@ try:
         dfs = []
         print(f"Execute size {size}")
         data = generate_binary_data(size)
-        # try:
-        #     client.delete(f"/size_{size}")
-        # except faaskeeper.exceptions.NodeDoesntExistException:
-        #     pass
-        # client.create(f"/size_{size}", data)
+        try:
+            client.delete(f"/size_{size}")
+        except faaskeeper.exceptions.NodeDoesntExistException:
+            pass
+        client.create(f"/size_{size}", data)
         client.get_data(f"/size_{size}")
 
         time.sleep(10)
@@ -97,24 +97,12 @@ try:
         df_write = pd.DataFrame(data=results, columns=["data"])
         df_write["client_write_data"] = StorageStatistics.instance().write_times
         df_write["op"] = "set_data"
-        # df_write = df_write.append(
-        #     {
-        #         "data": StorageStatistics.instance().write_units,
-        #         "op": "client_write_capacity",
-        #     },
-        #     ignore_index=True,
-        # )
+        
         df_write = pd.concat([df_write, pd.DataFrame.from_records([{
                 "data": StorageStatistics.instance().write_units,
                 "op": "client_write_capacity",
             }])], ignore_index=True)
         
-        # df_write = df_write.append(
-        #     {"data": experiment_begin, "op": "EXPERIMENT_BEGIN"}, ignore_index=True,
-        # )
-        # df_write = df_write.append(
-        #     {"data": experiment_end, "op": "EXPERIMENT_END"}, ignore_index=True,
-        # )
         df_write = pd.concat([df_write, pd.DataFrame.from_records([{"data": experiment_begin, "op": "EXPERIMENT_BEGIN"}])], ignore_index=True)
         df_write = pd.concat([df_write, pd.DataFrame.from_records([{"data": experiment_end, "op": "EXPERIMENT_END"}])], ignore_index=True)
         

@@ -27,13 +27,12 @@ execute("python3 -mvenv {}".format(python_env_dir))
 print("Install Python dependencies with pip")
 execute(". {}/bin/activate && pip3 install -r requirements.txt".format(python_env_dir))
 
-# print("Creating Node virtualenv at {}".format(python_env_dir))
-# execute(". {}/bin/activate && nodeenv -p".format(python_env_dir))
+print("Creating Node virtualenv at {}".format(python_env_dir))
+execute(". {}/bin/activate && nodeenv -p".format(python_env_dir))
 
-# print("Install Node dependencies with npm")
-# execute(". {}/bin/activate && npm install -g serverless serverless-s3-remover serverless-python-requirements serverless-iam-roles-per-function".format(python_env_dir))
+print("Install Node dependencies with npm")
+execute(". {}/bin/activate && npm install -g serverless serverless-s3-remover serverless-python-requirements serverless-iam-roles-per-function".format(python_env_dir))
 
 if not args.without_client_library:
     print("Install FaaSKeeper Python library")
-    execute(". {}/bin/activate && pip install git+https://github.com/spcl/faaskeeper-python --upgrade".format(python_env_dir))
-
+execute(". {}/bin/activate && pip install git+ssh://git@github.com/mcopik/faaskeeper-python.git@dev --upgrade".format(python_env_dir))
