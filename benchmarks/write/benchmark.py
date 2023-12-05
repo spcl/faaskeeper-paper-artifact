@@ -84,8 +84,13 @@ try:
             except faaskeeper.exceptions.TimeoutException:
                 print(f"FAILURE ON {i}")
                 continue
+            except Exception:
+                print(f"UNKNOWN FAILURE ON {i}")
+                continue
             end = datetime.now()
             results.append(int((end - begin) / timedelta(microseconds=1)))
+            # rate limit in cloud storage.(a single particular object can only be updated or overwritten up to once per second.)
+            time.sleep(1.1)
             if i % 10 == 0:
                 print(f"Repetition {i}")
         # sanity check
@@ -96,19 +101,9 @@ try:
         df_write = pd.DataFrame(data=results, columns=["data"])
         df_write["client_write_data"] = StorageStatistics.instance().write_times
         df_write["op"] = "set_data"
-        df_write = df_write.append(
-            {
-                "data": StorageStatistics.instance().write_units,
-                "op": "client_write_capacity",
-            },
-            ignore_index=True,
-        )
-        df_write = df_write.append(
-            {"data": experiment_begin, "op": "EXPERIMENT_BEGIN"}, ignore_index=True,
-        )
-        df_write = df_write.append(
-            {"data": experiment_end, "op": "EXPERIMENT_END"}, ignore_index=True,
-        )
+        df_write = pd.concat([df_write, pd.DataFrame({"data": [experiment_begin], "op": ["EXPERIMENT_BEGIN"]})], ignore_index=True)
+        df_write = pd.concat([df_write, pd.DataFrame({"data": [experiment_end], "op": ["EXPERIMENT_END"]})], ignore_index=True)
+        print("size:", size, "memory:", memory, "|", "EXPERIMENT_BEGIN", experiment_begin, "EXPERIMENT_END", experiment_end)
         df_write["memory"] = memory
         df_write["size"] = size
         #dfs.append(df_write)

@@ -1,3 +1,13 @@
 boto3==1.11.6
 pandas
 nodeenv
+
+
+google-cloud-pubsub==2.18.0 # MQ
+functions-framework==3.4.0 # cloud function
+google-cloud-datastore==2.16.1 # KV store
+google-cloud-storage==2.10.0 # object storage
+google-api-python-client==1.12.5
+google-cloud-monitoring==2.0.0
+google-api-python-client-stubs
+google-cloud-logging==2.0.0
