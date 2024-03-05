@@ -24,7 +24,7 @@ args = parser.parse_args()
 size = args.size
 #MEMORY = [128,256,512,1024,2048]
 #MEMORY = [512,1024,2048]
-MEMORY = [2048]
+MEMORY = [512, 2048]
 lambda_client = boto3.client("lambda", region_name="us-east-1")
 
 
@@ -34,14 +34,15 @@ def generate_binary_data(size):
     # so the reverse is: n * 3/4 - we always select multiples of fours
     original_size = int(size * 3 / 4)
     #return base64.b64encode(bytearray([1] * original_size))
-    return bytearray([1] * original_size)
-    #return bytes(bytearray([1] * original_size))
+    # return bytearray([1] * original_size)
+    return bytes(bytearray([1] * original_size))
 
 
 cfg = Config.deserialize(json.load(open(args.config)))
 service_name = f"faaskeeper-{cfg.deployment_name}"
-fname1 = "faaskeeper-test-write-writer"
-fname2 = "faaskeeper-test-write-distributor"
+fname1 = f"{service_name}-writer"
+fname2 = f"{service_name}-distributor"
+print("fn:", fname1, fname2)
 try:
     for memory in MEMORY:
         print(f"Update config to {memory}")
@@ -96,19 +97,15 @@ try:
         df_write = pd.DataFrame(data=results, columns=["data"])
         df_write["client_write_data"] = StorageStatistics.instance().write_times
         df_write["op"] = "set_data"
-        df_write = df_write.append(
-            {
+        
+        df_write = pd.concat([df_write, pd.DataFrame.from_records([{
                 "data": StorageStatistics.instance().write_units,
                 "op": "client_write_capacity",
-            },
-            ignore_index=True,
-        )
-        df_write = df_write.append(
-            {"data": experiment_begin, "op": "EXPERIMENT_BEGIN"}, ignore_index=True,
-        )
-        df_write = df_write.append(
-            {"data": experiment_end, "op": "EXPERIMENT_END"}, ignore_index=True,
-        )
+            }])], ignore_index=True)
+        
+        df_write = pd.concat([df_write, pd.DataFrame.from_records([{"data": experiment_begin, "op": "EXPERIMENT_BEGIN"}])], ignore_index=True)
+        df_write = pd.concat([df_write, pd.DataFrame.from_records([{"data": experiment_end, "op": "EXPERIMENT_END"}])], ignore_index=True)
+        
         df_write["memory"] = memory
         df_write["size"] = size
         #dfs.append(df_write)
