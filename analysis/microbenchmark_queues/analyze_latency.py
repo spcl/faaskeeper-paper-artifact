@@ -14,9 +14,9 @@ lambda_ = pd.read_csv('../../data/microbenchmark_queues/direct/lambda_2048.csv')
 lambda_cold_ = pd.read_csv('../../data/microbenchmark_queues/direct/lambda_cold_2048.csv')
 
 sqs_subset = sqs.loc[(sqs['type'] == 'invocation') & (sqs['is_cold'] == False)]
-sqs_fifo_subset = sqs_fifo.loc[(sqs_fifo['type'] == 'invocation') & (sqs['is_cold'] == False)]
-dynamo = dynamo.loc[(dynamo['type'] == 'invocation') & (sqs['is_cold'] == False)]
-lambda_ = lambda_.loc[(lambda_['type'] == 'invocation') & (sqs['is_cold'] == False)]
+sqs_fifo_subset = sqs_fifo.loc[(sqs_fifo['type'] == 'invocation') & (sqs_fifo['is_cold'] == False)]
+dynamo = dynamo.loc[(dynamo['type'] == 'invocation') & (dynamo['is_cold'] == False)]
+lambda_ = lambda_.loc[(lambda_['type'] == 'invocation') & (lambda_['is_cold'] == False)]
 lambda_cold_ = lambda_cold_.loc[(lambda_cold_['type'] == 'invocation')]
 
 for name, val, arg in [('Min', 'min', None), ('p50', 'median', None), ('p95', 'quantile', .95), ('p99', 'quantile', .99), ('Max', 'max',  None)]:
