@@ -46,11 +46,12 @@ try:
 
         print(f"Execute size {size}")
         data = generate_binary_data(size)
-        try:
-            client.delete(f"/size_{size}")
-        except faaskeeper.exceptions.NodeDoesntExistException:
-            pass
-        client.create(f"/size_{size}", data)
+        # try:
+        #     client.delete(f"/size_{size}")
+        # except faaskeeper.exceptions.NodeDoesntExistException:
+        #     pass
+        # client.create(f"/size_{size}", data)
+        client.get_data(f"/size_{size}")
         StorageStatistics.instance().reset()
 
         results = []
@@ -66,10 +67,10 @@ try:
         df_write = pd.DataFrame(data=results, columns=["data"])
         df_write['native_data'] = StorageStatistics.instance().read_times
         df_write["op"] = "read"
-        df_write = df_write.append(
-            {"data": StorageStatistics.instance().read_units, "op": "read_capacity"},
-            ignore_index=True,
-        )
+        # df_write = df_write.append(
+        #     {"data": StorageStatistics.instance().read_units, "op": "read_capacity"},
+        #     ignore_index=True,
+        # )
         df_write["size"] = size
         dfs.append(df_write)
 
