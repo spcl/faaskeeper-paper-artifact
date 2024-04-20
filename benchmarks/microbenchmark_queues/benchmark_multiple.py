@@ -423,9 +423,9 @@ for memory in MEMORY_SIZES:
     dfs.append(df_timing)
     # AND THIS IS FOR QUEUE LATENCY
     print(f'Begin benchmarking invocations with the queue {args.queue}')
-    results = []
     for size in BENCHMARK_SIZES:
 
+        results = []
         data = generate_binary_data(size)
         print(f"Start repetitions with size {size}")
         for i in range(args.repetitions):
