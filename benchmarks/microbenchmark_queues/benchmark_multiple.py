@@ -1,18 +1,12 @@
 import argparse
 import base64
-from concurrent.futures import ThreadPoolExecutor
 import json
 import socket
 import sys
 import time
 import urllib
-import multiprocessing
 from datetime import datetime, timedelta
 from functools import partial
-from google.cloud import pubsub_v1
-from google.auth.transport.requests import Request
-import requests
-import google.oauth2.id_token
 
 import pandas as pd
 import boto3
@@ -29,29 +23,10 @@ parser.add_argument('--port', type=int)
 parser.add_argument('--memory', type=int)
 args = parser.parse_args()
 
-# sqs_client = boto3.client('sqs', region_name=args.region)
-# lambda_client = boto3.client('lambda', region_name=args.region)
-# dynamo_client = boto3.client('dynamodb', region_name=args.region)
+sqs_client = boto3.client('sqs', region_name=args.region)
+lambda_client = boto3.client('lambda', region_name=args.region)
+dynamo_client = boto3.client('dynamodb', region_name=args.region)
 sqs_queue_url = None
-
-
-# the batch will be sent if any of the setting is met.
-batch_settings = pubsub_v1.types.BatchSettings(
-    max_messages=10,  # default 100, now it is 10
-    max_bytes= 1 * 1000 * 1000,  # default 1 MB, still 1 MB -> 1000 * 1000 KB
-    max_latency=0.0001,  # default 10 ms, now is .1ms
-)
-
-publisher_options = pubsub_v1.types.PublisherOptions(enable_message_ordering=True) # enable FIFO
-publisher_client = pubsub_v1.PublisherClient(publisher_options=publisher_options, batch_settings= batch_settings)
-_fifo_topic_id = "benchmark"
-_project_id = "wide-axiom-402003"
-fifo_topic_path = publisher_client.topic_path(_project_id, _fifo_topic_id)
-_topic_id = "benchmark2"
-topic_path = publisher_client.topic_path(_project_id, _topic_id)
-
-# cloud function direct
-endpoint = f"https://us-central1-{_project_id}.cloudfunctions.net/pubsubus1"
 
 """
     This benchmark evaluates the time needed to schedule and execute a serverless
@@ -94,120 +69,6 @@ def prepare_socket():
     sock.listen(1)
 
     return sock, addr, port
-
-def test_pubsub_fifo(fifo_topic_name, data, _, addr, port):
-    # push subs is one by one
-    payload = {
-        "ip": f"{addr}",
-        "port": port,
-        "data": data.decode()
-    }
-    data = json.dumps(payload).encode("utf-8")
-    publisher_client.publish(fifo_topic_name, data=data, ordering_key= "0")
-
-def test_pubsub(topic_name, data, _, addr, port):
-    payload = {
-        "ip": f"{addr}",
-        "port": port,
-        "data": data.decode()
-    }
-    data = json.dumps(payload).encode("utf-8")
-    publisher_client.publish(topic_name, data=data, ordering_key= "0")
-
-def get_result(endpoint, data, _, addr, port):
-    auth_req = Request()
-    id_token = google.oauth2.id_token.fetch_id_token(auth_req, endpoint)
-    response = requests.post(endpoint, json=data, headers={"Authorization": f"Bearer {id_token}"})
-    return response.content
-
-conn = None
-
-async def test_cloud_function_queue(endpoint, data, queue_message_id, addr, port):
-    loop = asyncio.get_running_loop()
-    executor = ThreadPoolExecutor(max_workers=2)
-    
-    def latency(results, conn):
-        begin = time.time()
-        recv_data = conn.recv(1024)
-        end = time.time()
-        ret = json.loads(recv_data.decode())
-        results.append([(end - begin), ret['is_cold']])
-    
-    print(f'Begin benchmarking invocations with the queue {args.queue}')
-    results = []
-    for size in BENCHMARK_SIZES:
-
-        data = generate_binary_data(size)
-        print(f"Start repetitions with size {size}")
-        payload = {
-            "ip": f"{addr}",
-            "port": port,
-            "data": data.decode()
-        }
-        for i in range(args.repetitions):
-            futures = []
-            futures.append(loop.run_in_executor(executor, get_result, endpoint, payload, queue_message_id, addr, port))
-            futures.append(loop.run_in_executor(executor, latency, results, conn))
-            queue_message_id += 1
-            _queue_results = await asyncio.gather(*futures)
-            
-            if i % 10 == 0:
-                print(f"Conducted {i} repetitions out of {args.repetitions}")
-        df_invoc = pd.DataFrame(data=results, columns=["data", "is_cold"])
-        df_invoc["queue"] = args.queue
-        df_invoc["size"] = int(size)
-        df_invoc["memory"] = memory
-        df_invoc["type"] = 'invocation'
-        dfs.append(df_invoc)
-    
-    df2 = pd.concat(dfs, axis=0, ignore_index=True)
-    df2.to_csv(f"{args.output_prefix}.csv")
-
-async def test_cloud_function_rtt(endpoint, data, queue_message_id, sock, addr, port):
-    loop = asyncio.get_running_loop()
-    executor = ThreadPoolExecutor(max_workers=2)
-    timing_results = []
-    payload = {
-        "ip": f"{addr}",
-        "port": port,
-        "data": data.decode()
-    }
-    
-    def rtt(endpoint, data, queue_message_id, sock, addr, port):
-        print('Connect to the serverless worker.')
-        global conn
-        while True:
-            try:
-                conn, addr = sock.accept()
-            except socket.timeout as e:
-                print(e)
-            except Exception as e:
-                raise e
-            else:
-                # THIS IS FOR TESTING NOTIFY
-                print('Connected, beginning RTT measurement')
-                data = conn.recv(64)
-                for i in range(COMMUNICATION_REPS):
-                    begin = time.time()
-                    conn.sendall(b'AAAAAAAAAAAAAAA')
-                    data = conn.recv(64)
-                    end = time.time()
-                    timing_results.append(end - begin)
-                print('Finished RTT measurement')
-                break
-        df_timing = pd.DataFrame(data=timing_results, columns=["data"])
-        df_timing["size"] = 0
-        df_timing["queue"] = args.queue
-        df_timing["memory"] = memory
-        df_timing["type"] = 'rtt'
-        dfs.append(df_timing)
-
-    futures = []
-    futures.append(loop.run_in_executor(executor, get_result, endpoint, payload, queue_message_id, addr, port))
-    futures.append(loop.run_in_executor(executor, rtt, endpoint, data, queue_message_id, sock, addr, port))
-    
-    _rtt_results = await asyncio.gather(*futures)
-
 
 def test_lambda(func_name, data, msg_id, addr, port):
     body = json.dumps({
@@ -349,12 +210,12 @@ dfs = []
 MEMORY_SIZES = [args.memory]
 for memory in MEMORY_SIZES:
 
-    # print(f"Update config to {memory}")
-    # lambda_client.update_function_configuration(
-    #     FunctionName=args.fname, MemorySize=memory
-    # )
-    # print("Done")
-    # time.sleep(15)
+    print(f"Update config to {memory}")
+    lambda_client.update_function_configuration(
+        FunctionName=args.fname, MemorySize=memory
+    )
+    print("Done")
+    time.sleep(15)
     print("Begin")
 
     if args.queue in ['sqs', 'sqs_fifo']:
@@ -376,16 +237,6 @@ for memory in MEMORY_SIZES:
         test_func = partial(test_dynamo, dynamo_table)
     elif args.queue == 'lambda':
         test_func = partial(test_lambda, func_name)
-    elif args.queue == 'pubsub_fifo':
-        test_func = partial(test_pubsub_fifo, fifo_topic_path) # dummy function
-    elif args.queue == 'pubsub':
-        test_func = partial(test_pubsub, topic_path)
-    elif args.queue == 'cloud_function': # gcp direct
-        import asyncio
-        sock, addr, port = prepare_socket()
-        asyncio.run(test_cloud_function_rtt(endpoint, b'0', queue_message_id, sock, addr, port))
-        asyncio.run(test_cloud_function_queue(endpoint, b'0', queue_message_id, addr, port))
-        exit()
     else:
         raise NotImplementedError()
 
@@ -403,7 +254,6 @@ for memory in MEMORY_SIZES:
         except Exception as e:
             raise e
         else:
-            # THIS IS FOR TESTING NOTIFY
             print('Connected, beginning RTT measurement')
             data = conn.recv(64)
             for i in range(COMMUNICATION_REPS):
@@ -421,7 +271,6 @@ for memory in MEMORY_SIZES:
     df_timing["memory"] = memory
     df_timing["type"] = 'rtt'
     dfs.append(df_timing)
-    # AND THIS IS FOR QUEUE LATENCY
     print(f'Begin benchmarking invocations with the queue {args.queue}')
     for size in BENCHMARK_SIZES:
 

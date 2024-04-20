@@ -8,11 +8,6 @@ import urllib
 from datetime import datetime, timedelta
 from functools import partial
 
-from google.cloud import pubsub_v1
-from google.auth.transport.requests import Request
-import requests
-import google.oauth2.id_token
-
 import pandas as pd
 import boto3
 
@@ -34,24 +29,6 @@ sqs_client = boto3.client('sqs', region_name=args.region)
 lambda_client = boto3.client('lambda', region_name=args.region)
 dynamo_client = boto3.client('dynamodb', region_name=args.region)
 sqs_queue_url = None
-
-# the batch will be sent if any of the setting is met.
-batch_settings = pubsub_v1.types.BatchSettings(
-    max_messages=10,  # default 100, now it is 10
-    max_bytes= 1 * 1000 * 1000,  # default 1 MB, still 1 MB -> 1000 * 1000 KB
-    max_latency=0.0001,  # default 10 ms, now is .1ms
-)
-
-publisher_options = pubsub_v1.types.PublisherOptions(enable_message_ordering=True) # enable FIFO
-publisher_client = pubsub_v1.PublisherClient(publisher_options=publisher_options, batch_settings= batch_settings)
-_fifo_topic_id = "benchmark"
-_project_id = "wide-axiom-402003"
-fifo_topic_path = publisher_client.topic_path(_project_id, _fifo_topic_id)
-_topic_id = "benchmark2"
-topic_path = publisher_client.topic_path(_project_id, _topic_id)
-
-# cloud function direct
-endpoint = f"https://us-central1-{_project_id}.cloudfunctions.net/throughput"
 
 """
     This benchmark evaluates the time needed to schedule and execute a serverless
@@ -93,25 +70,6 @@ def prepare_socket():
     sock.listen(1)
 
     return sock, addr, port
-
-def test_pubsub_fifo(fifo_topic_name, data, _, addr, port):
-    # push subs is one by one
-    payload = {
-        "ip": f"{addr}",
-        "port": port,
-        "data": data.decode()
-    }
-    data = json.dumps(payload).encode("utf-8")
-    publisher_client.publish(fifo_topic_name, data=data, ordering_key= "0")
-
-def test_pubsub(topic_name, data, _, addr, port):
-    payload = {
-        "ip": f"{addr}",
-        "port": port,
-        "data": data.decode()
-    }
-    data = json.dumps(payload).encode("utf-8")
-    publisher_client.publish(topic_name, data=data, ordering_key= "0")
 
 def test_lambda(func_name, data, msg_id, addr, port):
     body = json.dumps({
@@ -216,10 +174,6 @@ elif args.queue == 'dynamo':
     test_func = partial(test_dynamo, dynamo_table)
 elif args.queue == 'lambda':
     test_func = partial(test_lambda, func_name)
-elif args.queue == 'pubsub_fifo':
-    test_func = partial(test_pubsub_fifo, fifo_topic_path) # dummy function
-elif args.queue == 'pubsub':
-    test_func = partial(test_pubsub, topic_path)
 
 print(f'Begin benchmarking invocations with the queue {args.queue}')
 
