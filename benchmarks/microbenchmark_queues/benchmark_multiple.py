@@ -272,9 +272,9 @@ for memory in MEMORY_SIZES:
     df_timing["type"] = 'rtt'
     dfs.append(df_timing)
     print(f'Begin benchmarking invocations with the queue {args.queue}')
-    results = []
     for size in BENCHMARK_SIZES:
 
+        results = []
         data = generate_binary_data(size)
         print(f"Start repetitions with size {size}")
         for i in range(args.repetitions):

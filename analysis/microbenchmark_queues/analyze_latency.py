@@ -19,6 +19,12 @@ dynamo = dynamo.loc[(dynamo['type'] == 'invocation') & (dynamo['is_cold'] == Fal
 lambda_ = lambda_.loc[(lambda_['type'] == 'invocation') & (lambda_['is_cold'] == False)]
 lambda_cold_ = lambda_cold_.loc[(lambda_cold_['type'] == 'invocation')]
 
+print(sqs_subset.groupby(['memory', 'size']).count())
+print(sqs_fifo_subset.groupby(['memory', 'size']).count())
+print(dynamo.groupby(['memory', 'size']).count())
+print(lambda_.groupby(['memory', 'size']).count())
+print(lambda_cold_.groupby(['memory', 'size']).count())
+
 for name, val, arg in [('Min', 'min', None), ('p50', 'median', None), ('p95', 'quantile', .95), ('p99', 'quantile', .99), ('Max', 'max',  None)]:
 
     vals = []
@@ -29,6 +35,7 @@ for name, val, arg in [('Min', 'min', None), ('p50', 'median', None), ('p95', 'q
             res = func(arg)
         else:
             res = func()
+        #print(res)
         for size in (64, 65536):
             vals.append(res.loc[res['size'] == size].values[0][2] *1000.0)
     #print(vals)
