@@ -14,10 +14,16 @@ lambda_ = pd.read_csv('../../data/microbenchmark_queues/direct/lambda_2048.csv')
 lambda_cold_ = pd.read_csv('../../data/microbenchmark_queues/direct/lambda_cold_2048.csv')
 
 sqs_subset = sqs.loc[(sqs['type'] == 'invocation') & (sqs['is_cold'] == False)]
-sqs_fifo_subset = sqs_fifo.loc[(sqs_fifo['type'] == 'invocation') & (sqs['is_cold'] == False)]
-dynamo = dynamo.loc[(dynamo['type'] == 'invocation') & (sqs['is_cold'] == False)]
-lambda_ = lambda_.loc[(lambda_['type'] == 'invocation') & (sqs['is_cold'] == False)]
+sqs_fifo_subset = sqs_fifo.loc[(sqs_fifo['type'] == 'invocation') & (sqs_fifo['is_cold'] == False)]
+dynamo = dynamo.loc[(dynamo['type'] == 'invocation') & (dynamo['is_cold'] == False)]
+lambda_ = lambda_.loc[(lambda_['type'] == 'invocation') & (lambda_['is_cold'] == False)]
 lambda_cold_ = lambda_cold_.loc[(lambda_cold_['type'] == 'invocation')]
+
+print(sqs_subset.groupby(['memory', 'size']).count())
+print(sqs_fifo_subset.groupby(['memory', 'size']).count())
+print(dynamo.groupby(['memory', 'size']).count())
+print(lambda_.groupby(['memory', 'size']).count())
+print(lambda_cold_.groupby(['memory', 'size']).count())
 
 for name, val, arg in [('Min', 'min', None), ('p50', 'median', None), ('p95', 'quantile', .95), ('p99', 'quantile', .99), ('Max', 'max',  None)]:
 
@@ -29,6 +35,7 @@ for name, val, arg in [('Min', 'min', None), ('p50', 'median', None), ('p95', 'q
             res = func(arg)
         else:
             res = func()
+        #print(res)
         for size in (64, 65536):
             vals.append(res.loc[res['size'] == size].values[0][2] *1000.0)
     #print(vals)

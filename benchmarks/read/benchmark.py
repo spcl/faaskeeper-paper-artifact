@@ -21,7 +21,7 @@ args = parser.parse_args()
 BENCHMARK_SIZES = [2 ** i for i in range(2, 20)]
 
 
-def generate_binary_data(size):
+def generate_binary_data(size): # give size, return mock encoded data
     # for n bytes the length of base64 string is 4 * n / 3 (unpadded)
     # then it's padded to 4 bytes
     # so the reverse is: n * 3/4 - we always select multiples of fours
@@ -51,7 +51,6 @@ try:
         except faaskeeper.exceptions.NodeDoesntExistException:
             pass
         client.create(f"/size_{size}", data)
-        client.get_data(f"/size_{size}")
         StorageStatistics.instance().reset()
 
         results = []
@@ -74,7 +73,7 @@ try:
         df_write["size"] = size
         dfs.append(df_write)
 
-        if args.max_size != -1 and size > args.max_size:
+        if args.max_size != -1 and size == args.max_size:
             break
 
     df = pd.concat(dfs, axis=0, ignore_index=True)
