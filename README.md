@@ -93,4 +93,4 @@ Jupyter notebook in `analysis/zookeeper_utilization` generates Figure 4 in the p
 
 ### Cost Analysis
 
-The Jupyter notebook in `analysis/cost_analysis` conducts a cost analysis of FaaSKeeper. It will create the Figure 14 in paper.
+The Jupyter notebook in `analysis/cost_analysis` conducts a cost analysis of FaaSKeeper. It will create Figure 12 in paper.
