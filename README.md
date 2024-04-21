@@ -54,7 +54,9 @@ This benchmark evaluates write performance for a FaaSKeeper instance. Change the
 
 Jupyter notebook `final_plots.ipynb` generate Figures 9 (write performance on AWS), 10 (write distribution on AWS), 11 (hybrid storage on AWS) and 12 (write on GCP) in the paper, as well as data for Table 3 (write variability on AWS).
 
-The data processing GCP vCPU performance can be found in the notebook `gcp_vcpus.ipynb`.
+The data processing for GCP vCPU performance can be found in the notebook `gcp_vcpus.ipynb`.
+
+The data processing for AWS ARM functions can be found in the notebook `lambda_arm.ipynb`.
 
 ### Heartbeat
 
