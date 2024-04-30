@@ -78,16 +78,19 @@ Then, each file `run.sh` will execute a ZooKeeper client performing read or writ
 
 **Directory**: `zookeeper_utilization`.
 
-This benchmarks measures the utilization of ZooKeeper when hosting a Solr instance:
+This benchmarks measures the utilization of ZooKeeper when hosting an HBase instance:
 
-1) Run the `install_zk.sh` script on each VM to download and install a ZooKeeper instance.
-2) On each VM, run `g++ benchmarks/zookeeper_utilization/profiler.cpp -o profiler.x` to compile a dedicated profiling system.
-3) The `generate_zk_cfg.sh` script and provide three arguments corresponding to VM IPs.
-4) Run the `start_zk.sh` script - it's going to copy the ZK configuration files to the VM, SSH there and start a ZK instance.
-5) Run the `start_profiler.sh` script - it's going to SSH to each machine and start profiling script.
-6) Run the Solr workload.
-7) Run the `stop_profiler.sh` script- it's going to SSH to each machine, stop profiler, copy results to benchmarking machine and query ZK tree to generate statistics on node counts and sizes.
-deploy ZooKeeper on three different VMs, using the configuration files provided in `zookeeper_deployment`. In each configuration file, you need to change two of three available IPs (omit the `0.0.0.0` address) by putting the IP addresses of your VMs.
+1) Run the `install_zk.sh ZK_SERVER1 ZK_SERVER2 ...` script to download and install a ZooKeeper instance on each server. This will also compile the OS statistics profiler.
+2) Run the `generate_zk_cfg.sh` script and provide three arguments corresponding to VM IPs. This will create the ZooKeeper configuration files for all three instances.
+3) Run the `start_zk.sh` script - it's going to copy the ZK configuration files to the VM, SSH there and start a ZK instance.
+4) Run the `start_profiler.sh` script - it's going to SSH to each machine and start profiling script.
+5) Run the HBase workload - see instructions in a separate file in the benchmarks directory.
+6) Run the `stop_profiler.sh` script- it's going to SSH to each machine, stop profiler, copy results to benchmarking machine and query ZK tree to generate statistics on node counts and sizes.
+7) Now you can stop the virtual machines.
+
+#### HBase Instructions
+
+
 
 Jupyter notebook in `analysis/zookeeper_utilization` generates Figure 4 in the paper.
 
